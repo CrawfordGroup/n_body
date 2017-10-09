@@ -1019,6 +1019,9 @@ def process_options(name, db, options):
             raise Exception('List is not a currently implemented form of n_body '
                             'input. Try a dict.')
         elif isinstance(options, dict):
+            print("Passed into dict case")
+            for key in options.keys():
+                print(key)
             func = db['n_body_func']
             for key in options.keys():
                 # wfn method?
