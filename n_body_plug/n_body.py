@@ -37,20 +37,25 @@
 #
 #
 
+##### NOTE: dft_methods is broken around line ~980 or so#####
+
+##### ORIGINALLY ALL OF THESE WERE COMMENTED OUT. #####
+##### I WILL BE UNCOMMENTING/REPLACING AS NEEDED. #####
+
 import collections
 import psi4
-import molutil
-import proc
-import sys
-import copy
-import functional
-import driver
-import atexit
-import p4const
-import math
-import os
-import p4util
-import re
+#import molutil
+#import proc
+#import sys
+#import copy
+#import functional
+#import driver
+#import atexit
+#import p4const
+#import math
+#import os
+#import p4util
+#import re
 
 def clean_up(db):
     try:
@@ -110,7 +115,8 @@ def initialize_database(database, kwargs):
     database['num_threads']      = False
     database['bsse']             = ''
     database['pcm']              = False
-    database['n_body_func']      = kwargs.pop('n_body_func')
+#    database['n_body_func']      = kwargs.pop('n_body_func')
+    database['n_body_func']      = 'properties' 
     database['methods']          = {}
 
 
@@ -981,18 +987,18 @@ def print_body(n):
 
     
 
-
+##### NOTE: BROKEN #####
 # Build list of dft functional names
-dft_methods = []
-for ssuper in functional.superfunctional_list():
-    dft_methods.append(ssuper.name().lower())
-# Adds HF for now as psi4 can't yet do optical rotations
-dft_methods.append('hf')
+#dft_methods = []
+#for ssuper in functional.superfunctional_list():
+#    dft_methods.append(ssuper.name().lower())
+## Adds HF for now as psi4 can't yet do optical rotations
+#dft_methods.append('hf')
 
 
 def process_options(name, db, options):
     processed_options = {'methods':{}}
-    molecule = psi4.get_active_molecule()
+    molecule = psi4.core.get_active_molecule()
     nfrags = molecule.nfragments()
 
     try:

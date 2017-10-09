@@ -18,9 +18,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 09 October 2017 06:11PM
+    Psi4 started on: Monday, 09 October 2017 07:17PM
 
-    Process ID:  26907
+    Process ID:  70188
     PSIDATADIR: /home/bgpeyton/installed/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -32,7 +32,7 @@
 # PYTHONPATH must include directory above plugin directory.
 #     Define either externally or here, then import plugin.
 sys.path.insert(0, './..')
-import n_body
+import n_body_plug
 
 molecule test{
 0 1
@@ -57,7 +57,7 @@ set n_body {
   print 1
 }
 
-n_body.exampleFN()
+n_body_plug.exampleFN()
 
 # Taylor's "newest" input file example:
 #properties('cc2', n_body={'cc2': 1}, properties=['polarizability'])
@@ -65,7 +65,7 @@ n_body.exampleFN()
 # My proposed input file example:
 #my_nbody_plug.nbody(name, nbody_args= {}, properties = [])
 
-n_body.run_n_body('cc2', n_body={'cc2': 1}, properties=['polarizability'])
+n_body_plug.run_n_body('cc2', n_body={'cc2': 1}, properties=['polarizability'])
 
 --------------------------------------------------------------------------
 
@@ -73,10 +73,12 @@ Traceback (most recent call last):
   File "/home/bgpeyton/installed/psi4/bin/psi4", line 260, in <module>
     exec(content)
   File "<string>", line 42, in <module>
-  File "./../n_body/pymodule.py", line 61, in run_n_body
-    if not db.has_key('initialized'):
+  File "./../n_body_plug/pymodule.py", line 74, in run_n_body
+    n_body_options = n_body.process_options(name, db, kwargs.pop('n_body'))
+  File "/home/bgpeyton/testspace/n_body_plug_test/n_body_plug/n_body.py", line 1046, in process_options
+    raise Exception('Unrecognized value for n_body input parameter. It may be '
 
-AttributeError: 'DbfilenameShelf' object has no attribute 'has_key'
+Exception: Unrecognized value for n_body input parameter. It may be  a bool, int, list, or dict.
 
 *** Psi4 encountered an error. Buy a developer more coffee!
 *** Resources and help at github.com/psi4/psi4.

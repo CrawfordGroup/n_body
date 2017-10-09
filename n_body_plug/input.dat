@@ -2,7 +2,7 @@
 # PYTHONPATH must include directory above plugin directory.
 #     Define either externally or here, then import plugin.
 sys.path.insert(0, './..')
-import n_body
+import n_body_plug
 
 molecule test{
 0 1
@@ -27,7 +27,7 @@ set n_body {
   print 1
 }
 
-n_body.exampleFN()
+n_body_plug.exampleFN()
 
 # Taylor's "newest" input file example:
 #properties('cc2', n_body={'cc2': 1}, properties=['polarizability'])
@@ -35,5 +35,5 @@ n_body.exampleFN()
 # My proposed input file example:
 #my_nbody_plug.nbody(name, nbody_args= {}, properties = [])
 
-n_body.run_n_body('cc2', n_body={'cc2': 1}, properties=['polarizability'])
+n_body_plug.run_n_body('cc2', n_body={'cc2': 1}, properties=['polarizability'])
 

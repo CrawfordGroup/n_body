@@ -34,6 +34,7 @@ from psi4.driver.procrouting import proc_util
 
 ##### IMPORTS REQUIRED FOR TAYLOR'S run_n_body() FUNCTION #####
 import shelve
+import n_body
 
 def run_n_body(name, **kwargs):
     r"""Function encoding sequence of PSI module and plugin calls so that
@@ -58,7 +59,7 @@ def run_n_body(name, **kwargs):
     db = shelve.open('database',writeback=True)
     print(db)
     # Initialize database
-    if not db.has_key('initialized'):
+    if not 'initialized' in db:
         n_body.initialize_database(db, kwargs)
         db['initialized'] = True
     elif not db['initialized']:
