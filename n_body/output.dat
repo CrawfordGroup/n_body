@@ -1,0 +1,82 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.2a1.dev597 
+
+                         Git: Rev {master} 0ddc90a 
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Monday, 09 October 2017 06:11PM
+
+    Process ID:  26907
+    PSIDATADIR: /home/bgpeyton/installed/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+
+# PYTHONPATH must include directory above plugin directory.
+#     Define either externally or here, then import plugin.
+sys.path.insert(0, './..')
+import n_body
+
+molecule test{
+0 1
+O       11.05  14.88  13.42
+H       11.07  14.67  14.35
+H       11.78  15.49  13.29
+--
+O       18.58  15.28  15.69
+H       18.51  14.46  15.22
+H       19.39  15.2  16.2
+units angstrom
+no_reorient
+no_com
+}
+
+set {
+  scf_type pk
+  basis sto-3g
+}
+
+set n_body {
+  print 1
+}
+
+n_body.exampleFN()
+
+# Taylor's "newest" input file example:
+#properties('cc2', n_body={'cc2': 1}, properties=['polarizability'])
+
+# My proposed input file example:
+#my_nbody_plug.nbody(name, nbody_args= {}, properties = [])
+
+n_body.run_n_body('cc2', n_body={'cc2': 1}, properties=['polarizability'])
+
+--------------------------------------------------------------------------
+
+Traceback (most recent call last):
+  File "/home/bgpeyton/installed/psi4/bin/psi4", line 260, in <module>
+    exec(content)
+  File "<string>", line 42, in <module>
+  File "./../n_body/pymodule.py", line 61, in run_n_body
+    if not db.has_key('initialized'):
+
+AttributeError: 'DbfilenameShelf' object has no attribute 'has_key'
+
+*** Psi4 encountered an error. Buy a developer more coffee!
+*** Resources and help at github.com/psi4/psi4.

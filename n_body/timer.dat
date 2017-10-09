@@ -1,0 +1,552 @@
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 10:49:29 2017
+Timers Off: Mon Oct  9 10:49:29 2017
+
+Wall Time:        0.35 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 10:51:00 2017
+Timers Off: Mon Oct  9 10:51:01 2017
+
+Wall Time:        0.36 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 10:56:10 2017
+Timers Off: Mon Oct  9 10:56:10 2017
+
+Wall Time:        0.35 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 10:56:24 2017
+Timers Off: Mon Oct  9 10:56:24 2017
+
+Wall Time:        0.23 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 11:01:29 2017
+Timers Off: Mon Oct  9 11:01:29 2017
+
+Wall Time:        0.38 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 11:11:32 2017
+Timers Off: Mon Oct  9 11:11:33 2017
+
+Wall Time:        0.35 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 11:12:18 2017
+Timers Off: Mon Oct  9 11:12:18 2017
+
+Wall Time:        0.25 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 11:17:38 2017
+Timers Off: Mon Oct  9 11:17:39 2017
+
+Wall Time:        0.35 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 11:21:00 2017
+Timers Off: Mon Oct  9 11:21:00 2017
+
+Wall Time:        0.36 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 12:07:20 2017
+Timers Off: Mon Oct  9 12:07:21 2017
+
+Wall Time:        0.80 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 13:27:28 2017
+Timers Off: Mon Oct  9 13:27:29 2017
+
+Wall Time:        0.70 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 13:29:06 2017
+Timers Off: Mon Oct  9 13:29:06 2017
+
+Wall Time:        0.36 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 13:29:58 2017
+Timers Off: Mon Oct  9 13:29:59 2017
+
+Wall Time:        0.24 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 13:38:43 2017
+Timers Off: Mon Oct  9 13:38:48 2017
+
+Wall Time:        4.72 seconds
+
+Total PK formation time     :      0.050u      0.000s      0.027w      1 calls
+HF: Form H                  :      0.000u      0.000s      0.009w      1 calls
+HF: Form S/X                :      0.000u      0.000s      0.001w      1 calls
+HF: Guess                   :      0.117u      0.017s      0.076w      1 calls
+SAD Guess                   :      0.117u      0.017s      0.074w      1 calls
+HF: Form G                  :      0.000u      0.000s      0.001w     14 calls
+JK: D                       :      0.000u      0.000s      0.000w     14 calls
+JK: USO2AO                  :      0.000u      0.000s      0.000w     14 calls
+JK: JK                      :      0.000u      0.000s      0.000w     14 calls
+PK computes JK              :      0.000u      0.000s      0.000w     14 calls
+JK: AO2USO                  :      0.000u      0.000s      0.000w     14 calls
+HF: Form F                  :      0.000u      0.000s      0.000w     14 calls
+HF: DIIS                    :      0.017u      0.000s      0.003w     14 calls
+DIISManager::add_entry      :      0.000u      0.000s      0.002w     13 calls
+DIISManager::extrapolate    :      0.017u      0.000s      0.001w     12 calls
+bMatrix setup               :      0.000u      0.000s      0.000w     12 calls
+bMatrix pseudoinverse       :      0.017u      0.000s      0.000w     12 calls
+New vector                  :      0.000u      0.000s      0.000w     12 calls
+HF: Form C                  :      0.000u      0.000s      0.001w     14 calls
+HF: Form D                  :      0.000u      0.000s      0.000w     14 calls
+A->Wmnij                    :      0.000u      0.000s      0.000w      7 calls
+E->Wmnij                    :      0.000u      0.017s      0.004w      7 calls
+D->Wmnij                    :      0.000u      0.000s      0.002w      7 calls
+F->Wabei                    :      0.000u      0.000s      0.000w      1 calls
+B->Wabei                    :      0.000u      0.000s      0.000w      1 calls
+Wabei_sort                  :      0.000u      0.000s      0.000w      1 calls
+ccresponse                  :      0.083u      0.100s      0.777w      1 calls
+compute_X                   :      0.033u      0.017s      0.200w      3 calls
+linear terms                :      0.000u      0.000s      0.004w      9 calls
+quad terms                  :      0.050u      0.033s      0.101w      9 calls
+
+-----------------------------------------------------------
+Total PK formation time     :      0.050u      0.000s      0.027w      1 calls
+HF: Form H                  :      0.000u      0.000s      0.009w      1 calls
+HF: Form S/X                :      0.000u      0.000s      0.001w      1 calls
+HF: Guess                   :      0.117u      0.017s      0.076w      1 calls
+| SAD Guess                 :      0.117u      0.017s      0.074w      1 calls
+HF: Form G                  :      0.000u      0.000s      0.001w     14 calls
+| JK: D                     :      0.000u      0.000s      0.000w     14 calls
+| JK: USO2AO                :      0.000u      0.000s      0.000w     14 calls
+| JK: JK                    :      0.000u      0.000s      0.000w     14 calls
+| | PK computes JK          :      0.000u      0.000s      0.000w     14 calls
+| JK: AO2USO                :      0.000u      0.000s      0.000w     14 calls
+HF: Form F                  :      0.000u      0.000s      0.000w     14 calls
+HF: DIIS                    :      0.017u      0.000s      0.003w     14 calls
+| DIISManager::add_entry    :      0.000u      0.000s      0.002w     13 calls
+| DIISManager::extrapolate  :      0.017u      0.000s      0.001w     12 calls
+| | bMatrix setup           :      0.000u      0.000s      0.000w     12 calls
+| | bMatrix pseudoinverse   :      0.017u      0.000s      0.000w     12 calls
+| | New vector              :      0.000u      0.000s      0.000w     12 calls
+HF: Form C                  :      0.000u      0.000s      0.001w     14 calls
+HF: Form D                  :      0.000u      0.000s      0.000w     14 calls
+A->Wmnij                    :      0.000u      0.000s      0.000w      7 calls
+E->Wmnij                    :      0.000u      0.017s      0.004w      7 calls
+D->Wmnij                    :      0.000u      0.000s      0.002w      7 calls
+F->Wabei                    :      0.000u      0.000s      0.000w      1 calls
+B->Wabei                    :      0.000u      0.000s      0.000w      1 calls
+Wabei_sort                  :      0.000u      0.000s      0.000w      1 calls
+ccresponse                  :      0.083u      0.100s      0.777w      1 calls
+| compute_X                 :      0.033u      0.017s      0.200w      3 calls
+| linear terms              :      0.000u      0.000s      0.004w      9 calls
+| quad terms                :      0.050u      0.033s      0.101w      9 calls
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 13:47:24 2017
+Timers Off: Mon Oct  9 13:47:29 2017
+
+Wall Time:        4.91 seconds
+
+Total PK formation time     :      0.050u      0.000s      0.030w      1 calls
+HF: Form H                  :      0.000u      0.000s      0.010w      1 calls
+HF: Form S/X                :      0.000u      0.000s      0.002w      1 calls
+HF: Guess                   :      0.117u      0.000s      0.076w      1 calls
+SAD Guess                   :      0.117u      0.000s      0.074w      1 calls
+HF: Form G                  :      0.000u      0.000s      0.001w     14 calls
+JK: D                       :      0.000u      0.000s      0.000w     14 calls
+JK: USO2AO                  :      0.000u      0.000s      0.000w     14 calls
+JK: JK                      :      0.000u      0.000s      0.000w     14 calls
+PK computes JK              :      0.000u      0.000s      0.000w     14 calls
+JK: AO2USO                  :      0.000u      0.000s      0.000w     14 calls
+HF: Form F                  :      0.000u      0.000s      0.000w     14 calls
+HF: DIIS                    :      0.000u      0.017s      0.003w     14 calls
+DIISManager::add_entry      :      0.000u      0.017s      0.002w     13 calls
+DIISManager::extrapolate    :      0.000u      0.000s      0.001w     12 calls
+bMatrix setup               :      0.000u      0.000s      0.000w     12 calls
+bMatrix pseudoinverse       :      0.000u      0.000s      0.000w     12 calls
+New vector                  :      0.000u      0.000s      0.000w     12 calls
+HF: Form C                  :      0.017u      0.000s      0.001w     14 calls
+HF: Form D                  :      0.000u      0.000s      0.000w     14 calls
+A->Wmnij                    :      0.000u      0.000s      0.000w      7 calls
+E->Wmnij                    :      0.000u      0.017s      0.004w      7 calls
+D->Wmnij                    :      0.000u      0.000s      0.002w      7 calls
+F->Wabei                    :      0.000u      0.000s      0.000w      1 calls
+B->Wabei                    :      0.000u      0.000s      0.000w      1 calls
+Wabei_sort                  :      0.000u      0.000s      0.000w      1 calls
+ccresponse                  :      0.067u      0.117s      0.773w      1 calls
+compute_X                   :      0.033u      0.033s      0.199w      3 calls
+linear terms                :      0.000u      0.000s      0.005w      9 calls
+quad terms                  :      0.017u      0.033s      0.092w      9 calls
+
+-----------------------------------------------------------
+Total PK formation time     :      0.050u      0.000s      0.030w      1 calls
+HF: Form H                  :      0.000u      0.000s      0.010w      1 calls
+HF: Form S/X                :      0.000u      0.000s      0.002w      1 calls
+HF: Guess                   :      0.117u      0.000s      0.076w      1 calls
+| SAD Guess                 :      0.117u      0.000s      0.074w      1 calls
+HF: Form G                  :      0.000u      0.000s      0.001w     14 calls
+| JK: D                     :      0.000u      0.000s      0.000w     14 calls
+| JK: USO2AO                :      0.000u      0.000s      0.000w     14 calls
+| JK: JK                    :      0.000u      0.000s      0.000w     14 calls
+| | PK computes JK          :      0.000u      0.000s      0.000w     14 calls
+| JK: AO2USO                :      0.000u      0.000s      0.000w     14 calls
+HF: Form F                  :      0.000u      0.000s      0.000w     14 calls
+HF: DIIS                    :      0.000u      0.017s      0.003w     14 calls
+| DIISManager::add_entry    :      0.000u      0.017s      0.002w     13 calls
+| DIISManager::extrapolate  :      0.000u      0.000s      0.001w     12 calls
+| | bMatrix setup           :      0.000u      0.000s      0.000w     12 calls
+| | bMatrix pseudoinverse   :      0.000u      0.000s      0.000w     12 calls
+| | New vector              :      0.000u      0.000s      0.000w     12 calls
+HF: Form C                  :      0.017u      0.000s      0.001w     14 calls
+HF: Form D                  :      0.000u      0.000s      0.000w     14 calls
+A->Wmnij                    :      0.000u      0.000s      0.000w      7 calls
+E->Wmnij                    :      0.000u      0.017s      0.004w      7 calls
+D->Wmnij                    :      0.000u      0.000s      0.002w      7 calls
+F->Wabei                    :      0.000u      0.000s      0.000w      1 calls
+B->Wabei                    :      0.000u      0.000s      0.000w      1 calls
+Wabei_sort                  :      0.000u      0.000s      0.000w      1 calls
+ccresponse                  :      0.067u      0.117s      0.773w      1 calls
+| compute_X                 :      0.033u      0.033s      0.199w      3 calls
+| linear terms              :      0.000u      0.000s      0.005w      9 calls
+| quad terms                :      0.017u      0.033s      0.092w      9 calls
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 15:45:51 2017
+Timers Off: Mon Oct  9 15:45:52 2017
+
+Wall Time:        0.67 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 15:46:36 2017
+Timers Off: Mon Oct  9 15:46:41 2017
+
+Wall Time:        4.91 seconds
+
+Total PK formation time     :      0.050u      0.000s      0.029w      1 calls
+HF: Form H                  :      0.000u      0.000s      0.009w      1 calls
+HF: Form S/X                :      0.000u      0.000s      0.003w      1 calls
+HF: Guess                   :      0.133u      0.000s      0.077w      1 calls
+SAD Guess                   :      0.117u      0.000s      0.075w      1 calls
+HF: Form G                  :      0.000u      0.000s      0.001w     14 calls
+JK: D                       :      0.000u      0.000s      0.000w     14 calls
+JK: USO2AO                  :      0.000u      0.000s      0.000w     14 calls
+JK: JK                      :      0.000u      0.000s      0.000w     14 calls
+PK computes JK              :      0.000u      0.000s      0.000w     14 calls
+JK: AO2USO                  :      0.000u      0.000s      0.000w     14 calls
+HF: Form F                  :      0.000u      0.000s      0.000w     14 calls
+HF: DIIS                    :      0.000u      0.000s      0.003w     14 calls
+DIISManager::add_entry      :      0.000u      0.000s      0.002w     13 calls
+DIISManager::extrapolate    :      0.000u      0.000s      0.001w     12 calls
+bMatrix setup               :      0.000u      0.000s      0.000w     12 calls
+bMatrix pseudoinverse       :      0.000u      0.000s      0.000w     12 calls
+New vector                  :      0.000u      0.000s      0.000w     12 calls
+HF: Form C                  :      0.000u      0.000s      0.001w     14 calls
+HF: Form D                  :      0.000u      0.000s      0.000w     14 calls
+A->Wmnij                    :      0.000u      0.000s      0.000w      7 calls
+E->Wmnij                    :      0.000u      0.000s      0.050w      7 calls
+D->Wmnij                    :      0.017u      0.000s      0.003w      7 calls
+F->Wabei                    :      0.000u      0.000s      0.000w      1 calls
+B->Wabei                    :      0.000u      0.000s      0.000w      1 calls
+Wabei_sort                  :      0.000u      0.000s      0.000w      1 calls
+ccresponse                  :      0.100u      0.083s      0.721w      1 calls
+compute_X                   :      0.017u      0.017s      0.187w      3 calls
+linear terms                :      0.017u      0.017s      0.005w      9 calls
+quad terms                  :      0.033u      0.033s      0.083w      9 calls
+
+-----------------------------------------------------------
+Total PK formation time     :      0.050u      0.000s      0.029w      1 calls
+HF: Form H                  :      0.000u      0.000s      0.009w      1 calls
+HF: Form S/X                :      0.000u      0.000s      0.003w      1 calls
+HF: Guess                   :      0.133u      0.000s      0.077w      1 calls
+| SAD Guess                 :      0.117u      0.000s      0.075w      1 calls
+HF: Form G                  :      0.000u      0.000s      0.001w     14 calls
+| JK: D                     :      0.000u      0.000s      0.000w     14 calls
+| JK: USO2AO                :      0.000u      0.000s      0.000w     14 calls
+| JK: JK                    :      0.000u      0.000s      0.000w     14 calls
+| | PK computes JK          :      0.000u      0.000s      0.000w     14 calls
+| JK: AO2USO                :      0.000u      0.000s      0.000w     14 calls
+HF: Form F                  :      0.000u      0.000s      0.000w     14 calls
+HF: DIIS                    :      0.000u      0.000s      0.003w     14 calls
+| DIISManager::add_entry    :      0.000u      0.000s      0.002w     13 calls
+| DIISManager::extrapolate  :      0.000u      0.000s      0.001w     12 calls
+| | bMatrix setup           :      0.000u      0.000s      0.000w     12 calls
+| | bMatrix pseudoinverse   :      0.000u      0.000s      0.000w     12 calls
+| | New vector              :      0.000u      0.000s      0.000w     12 calls
+HF: Form C                  :      0.000u      0.000s      0.001w     14 calls
+HF: Form D                  :      0.000u      0.000s      0.000w     14 calls
+A->Wmnij                    :      0.000u      0.000s      0.000w      7 calls
+E->Wmnij                    :      0.000u      0.000s      0.050w      7 calls
+D->Wmnij                    :      0.017u      0.000s      0.003w      7 calls
+F->Wabei                    :      0.000u      0.000s      0.000w      1 calls
+B->Wabei                    :      0.000u      0.000s      0.000w      1 calls
+Wabei_sort                  :      0.000u      0.000s      0.000w      1 calls
+ccresponse                  :      0.100u      0.083s      0.721w      1 calls
+| compute_X                 :      0.017u      0.017s      0.187w      3 calls
+| linear terms              :      0.017u      0.017s      0.005w      9 calls
+| quad terms                :      0.033u      0.033s      0.083w      9 calls
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 17:26:15 2017
+Timers Off: Mon Oct  9 17:26:15 2017
+
+Wall Time:        0.45 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 17:27:40 2017
+Timers Off: Mon Oct  9 17:27:40 2017
+
+Wall Time:        0.36 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 17:27:44 2017
+Timers Off: Mon Oct  9 17:27:44 2017
+
+Wall Time:        0.26 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 17:27:54 2017
+Timers Off: Mon Oct  9 17:27:54 2017
+
+Wall Time:        0.25 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 17:28:10 2017
+Timers Off: Mon Oct  9 17:28:10 2017
+
+Wall Time:        0.26 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 17:30:10 2017
+Timers Off: Mon Oct  9 17:30:11 2017
+
+Wall Time:        0.35 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 17:30:32 2017
+Timers Off: Mon Oct  9 17:30:33 2017
+
+Wall Time:        0.25 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 17:33:49 2017
+Timers Off: Mon Oct  9 17:33:49 2017
+
+Wall Time:        0.35 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 17:34:12 2017
+Timers Off: Mon Oct  9 17:34:12 2017
+
+Wall Time:        0.25 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 17:35:30 2017
+Timers Off: Mon Oct  9 17:35:30 2017
+
+Wall Time:        0.36 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 17:41:24 2017
+Timers Off: Mon Oct  9 17:41:24 2017
+
+Wall Time:        0.37 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 17:44:20 2017
+Timers Off: Mon Oct  9 17:44:20 2017
+
+Wall Time:        0.41 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 18:01:58 2017
+Timers Off: Mon Oct  9 18:01:59 2017
+
+Wall Time:        0.35 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
+
+Host: nrlogin1
+
+Timers On : Mon Oct  9 18:11:29 2017
+Timers Off: Mon Oct  9 18:11:29 2017
+
+Wall Time:        0.30 seconds
+
+
+-----------------------------------------------------------
+
+***********************************************************
