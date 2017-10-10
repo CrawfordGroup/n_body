@@ -18,9 +18,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 09 October 2017 10:00PM
+    Psi4 started on: Tuesday, 10 October 2017 11:32AM
 
-    Process ID:  18857
+    Process ID:  81448
     PSIDATADIR: /home/bgpeyton/installed/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -75,7 +75,7 @@ Traceback (most recent call last):
   File "<string>", line 42, in <module>
   File "./../n_body_plug/pymodule.py", line 74, in run_n_body
     n_body_options = n_body.process_options(name, db, kwargs.pop('n_body'))
-  File "/home/bgpeyton/testspace/n_body_plug_test/n_body_plug/n_body.py", line 1055, in process_options
+  File "/home/bgpeyton/testspace/n_body_plug_test/n_body_plug/n_body.py", line 1063, in process_options
     raise Exception('Unrecognized value for n_body input parameter. It may be '
 
 Exception: Unrecognized value for n_body input parameter. It may be  a bool, int, list, or dict.

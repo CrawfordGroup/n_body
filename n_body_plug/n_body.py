@@ -106,6 +106,7 @@ ftensor_results = [
     'rotation_tensor'
 ]
 
+
 def initialize_database(database, kwargs):
     database['initialized']      = False
     database['inputs_generated'] = False
@@ -117,6 +118,13 @@ def initialize_database(database, kwargs):
     database['bsse']             = ''
     database['pcm']              = False
 #    database['n_body_func']      = kwargs.pop('n_body_func')
+    prop_arg = kwargs.get('properties', [])
+    if prop_arg == []:
+        database['n_body_func'] = psi4.properties
+#        now this could be called like:
+#        database['n_body_func']()
+    else:
+        database['n_body_func'] = psi4.energy
     database['n_body_func']      = 'properties' 
     database['methods']          = {}
 
