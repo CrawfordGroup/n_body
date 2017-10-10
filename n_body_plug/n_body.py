@@ -42,7 +42,7 @@
 ##### ORIGINALLY ALL OF THESE WERE COMMENTED OUT. #####
 ##### I WILL BE UNCOMMENTING/REPLACING AS NEEDED. #####
 
-import collections
+#import collections
 import psi4
 #import molutil
 #import proc
@@ -50,6 +50,7 @@ import psi4
 #import copy
 #import functional
 #import driver
+# driver no longer exists, see proc.py and procrouting folder
 #import atexit
 #import p4const
 #import math
@@ -1020,12 +1021,17 @@ def process_options(name, db, options):
                             'input. Try a dict.')
         elif isinstance(options, dict):
             print("Passed into dict case")
-            for key in options.keys():
-                print(key)
             func = db['n_body_func']
             for key in options.keys():
+                print("Made it into for loop")
                 # wfn method?
-                if key in driver.procedures['{}'.format(func.__name__)].keys():
+#                if key in driver.procedures['{}'.format(func.__name__)].keys():
+                print("hello before func")
+                print(db['n_body_func'])
+                print(func.__name__)
+                print("hello after func")
+                if key in psi4.driver.procrouting.proc_table['{}'.format(func.__name__)].keys():
+                    print("Made it into wfn methods")
                     processed_options['methods'].update({key:options[key]})
                 # dft method?
                 elif key in dft_methods:
