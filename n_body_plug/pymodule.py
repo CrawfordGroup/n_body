@@ -35,6 +35,8 @@ from psi4.driver.procrouting import proc_util
 ##### IMPORTS REQUIRED FOR TAYLOR'S run_n_body() FUNCTION #####
 import shelve
 import n_body
+#os is already imported in n_body
+import os
 
 def run_n_body(name, **kwargs):
     r"""Function encoding sequence of PSI module and plugin calls so that
@@ -46,7 +48,7 @@ def run_n_body(name, **kwargs):
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
 
-    print("Hello run_n_body()!")
+#    print("START run_n_body()")
 
     # Your plugin's psi4 run sequence goes here
     psi4.core.set_local_option('MYPLUGIN', 'PRINT', 1)
@@ -57,7 +59,7 @@ def run_n_body(name, **kwargs):
     # make sense anyways.
 
     db = shelve.open('database',writeback=True)
-    print(db)
+#    print(db)
     # Initialize database
     if not 'initialized' in db:
         n_body.initialize_database(db, kwargs)
@@ -74,12 +76,12 @@ def run_n_body(name, **kwargs):
     n_body_options = n_body.process_options(name, db, kwargs.pop('n_body'))
 
     # Compare database options to n_body_options
-    if n_body_options.has_key('distributed'):
+    if 'distributed' in n_body_options:
         db['distributed'] = n_body_options['distributed']
         if not db['distributed']:
             raise Exception("Currently n_body jobs must be run in distributed mode"
                             " use the n_body wrapper instead.\n")
-    if n_body_options.has_key('cutoff'):
+    if 'cutoff' in n_body_options:
         db['cutoff'] = n_body_options['cutoff']
     if 'num_threads' in n_body_options:
         db['num_threads'] = n_body_options['num_threads']
@@ -88,7 +90,7 @@ def run_n_body(name, **kwargs):
     if 'pcm' in n_body_options:
         db['pcm'] = n_body_options['pcm']
     # methods consistency check
-    if n_body_options.has_key('methods'):
+    if 'methods' in n_body_options:
         for key,val in n_body_options['methods'].items():
             if key in db['methods'].keys():
                 # requested n_body_max smaller than previously requested
@@ -112,7 +114,7 @@ def run_n_body(name, **kwargs):
                 db['inputs_generated'] = False
 
     # Get complete system
-    molecule = psi4.get_active_molecule()
+    molecule = psi4.core.get_active_molecule()
 
     # Determine interacting fragments
     if db['cutoff']:
@@ -147,12 +149,12 @@ def run_n_body(name, **kwargs):
                 #if db['bsse'] == 'cluster_basis'
                 #clusters = extract_clusters(molecule, True, n)
                 # Get all possible clusters without ghost atoms
-                clusters = extract_clusters(molecule, False, n)
+                clusters = psi4.extract_clusters(molecule, False, n)
                 #if db['bsse'] == 'radius'
                 #clusters = extract_clusters(molecule, False, n)
                 #clusters = n_body.expand_basis(clusters, db['basis_cutoff'])
                 # Get list of fragments involved in clusters
-                indexes = extract_cluster_indexing(molecule, n)
+                indexes = psi4.extract_cluster_indexing(molecule, n)
                 print('Length of index array = {}'.format(len(indexes)))
 
                 # Testing for extension to inclusion of nearby atoms (ghosted)
@@ -213,8 +215,8 @@ def run_n_body(name, **kwargs):
                 db[method][n]['total_num_jobs'] = len(clusters)
                 print('Number of jobs created = {}'.format(len(clusters)))
                 for k in range(len(clusters)):
-                    activate(clusters[k])
-                    cluster = psi4.get_active_molecule()
+                    psi4.activate(clusters[k])
+                    cluster = psi4.core.get_active_molecule()
                     ### Set-up things for input generation
                     # Get list of combinations to ghost
                     # MBCP 
@@ -262,13 +264,14 @@ def run_n_body(name, **kwargs):
                             cluster.update_geometry()
 
 
-                    cluster.set_name('{}_{}'.format(molecule.name(),cluster_dir(indexes[k])))
-                    directory = '{}/{}/{}'.format(method,n_body.n_body_dir(n),cluster_dir(indexes[k]))
+                    cluster.set_name('{}_{}'.format(molecule.name(),n_body.cluster_dir(indexes[k])))
+                    #molecule.set_name('{}_{}'.format(molecule.name(),cluster_dir(indexes[k])))
+                    directory = '{}/{}/{}'.format(method,n_body.n_body_dir(n),n_body.cluster_dir(indexes[k]))
                     n_body.plant(cluster, db, kwargs, method, directory)
 
 
                     # Update database job_status dict
-                    db[method][n]['job_status'].update({cluster_dir(indexes[k]):
+                    db[method][n]['job_status'].update({n_body.cluster_dir(indexes[k]):
                                                                    'not_started'})
         # Check for zero jobs (happens occasionally due to cutoff)
         for method in db['methods']:
@@ -288,12 +291,13 @@ def run_n_body(name, **kwargs):
         n_incomplete = 0
         # Check all methods
         for method in db['methods'].keys():
-            if method in n_body.dft_methods:
-                outname = 'input.log'
-                complete_message = 'Normal termination of Gaussian'
-            else:
-                outname = 'output.dat'
-                complete_message = 'PSI4 exiting successfully'
+            #### NOTE: dft_methods is defunct #####
+#            if method in n_body.dft_methods:
+#                outname = 'input.log'
+#                complete_message = 'Normal termination of Gaussian'
+#            else:
+            outname = 'output.dat'
+            complete_message = 'PSI4 exiting successfully'
             # Check all n_body_levels
             for field in db[method]['farm']:
                 print(field)
@@ -331,34 +335,35 @@ def run_n_body(name, **kwargs):
     db.close()
     db = shelve.open('database',writeback=True)
 
-    # Gather results
-    if not db['results_computed']:
-        for method in db['methods'].keys():
-            for field in db[method]['farm']:
-                print(field)
-                num_fin = db[method][field]['num_jobs_complete']
-                tot_num = db[method][field]['total_num_jobs']
-                print('{}/{} finished'.format(num_fin,tot_num))
-                if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
-                    if method in n_body.dft_methods:
-                        n_body.harvest_g09(db,method,field)
-                    else:
-                        n_body.harvest_data(db,method,field)
-            for field in db[method]['farm']:
-                if isinstance(field, int):
-                    n_body.cook_data(db,method,field)
-                    #if db['bsse'] == 'vmfc' and field > 1:
-                    #    n_body.vmfc_cook(db, method, field)
-                    #    n_body.mbcp_cook(db, method, field)
-                    if db['bsse'] == 'vmfc':
-                        n_body.vmfc_cook(db, method, field)
-                        if field > 1:
-                            n_body.mbcp_cook(db, method, field)
-                    elif db['bsse'] == 'mbcp' and field > 1:
-                        n_body.mbcp_cook(db,method,field)
-                    # Future location of an if check for mass adjust or not
-                    if 'rotation' in db[method]['results']:
-                        n_body.mass_adjust_rotations(db,method,field)
+#    # Gather results
+#    #### NOTE: skipping results gathering for now, working on input generation####
+#    if not db['results_computed']:
+#        for method in db['methods'].keys():
+#            for field in db[method]['farm']:
+#                print(field)
+#                num_fin = db[method][field]['num_jobs_complete']
+#                tot_num = db[method][field]['total_num_jobs']
+#                print('{}/{} finished'.format(num_fin,tot_num))
+#                if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
+#                    if method in n_body.dft_methods:
+#                        n_body.harvest_g09(db,method,field)
+#                    else:
+#                        n_body.harvest_data(db,method,field)
+#            for field in db[method]['farm']:
+#                if isinstance(field, int):
+#                    n_body.cook_data(db,method,field)
+#                    #if db['bsse'] == 'vmfc' and field > 1:
+#                    #    n_body.vmfc_cook(db, method, field)
+#                    #    n_body.mbcp_cook(db, method, field)
+#                    if db['bsse'] == 'vmfc':
+#                        n_body.vmfc_cook(db, method, field)
+#                        if field > 1:
+#                            n_body.mbcp_cook(db, method, field)
+#                    elif db['bsse'] == 'mbcp' and field > 1:
+#                        n_body.mbcp_cook(db,method,field)
+#                    # Future location of an if check for mass adjust or not
+#                    if 'rotation' in db[method]['results']:
+#                        n_body.mass_adjust_rotations(db,method,field)
 
     db.close()
     db = shelve.open('database',writeback=True)
@@ -383,5 +388,4 @@ def run_n_body(name, **kwargs):
 
 def exampleFN():
     # Your Python code goes here
-    print("Hello exampleFN()!")
     pass

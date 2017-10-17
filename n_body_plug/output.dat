@@ -18,9 +18,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tuesday, 10 October 2017 11:32AM
+    Psi4 started on: Tuesday, 17 October 2017 03:15PM
 
-    Process ID:  81448
+    Process ID:   6530
     PSIDATADIR: /home/bgpeyton/installed/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -57,7 +57,7 @@ set n_body {
   print 1
 }
 
-n_body_plug.exampleFN()
+#n_body_plug.exampleFN()
 
 # Taylor's "newest" input file example:
 #properties('cc2', n_body={'cc2': 1}, properties=['polarizability'])
@@ -65,20 +65,12 @@ n_body_plug.exampleFN()
 # My proposed input file example:
 #my_nbody_plug.nbody(name, nbody_args= {}, properties = [])
 
+# current running example of properties calculation
 n_body_plug.run_n_body('cc2', n_body={'cc2': 1}, properties=['polarizability'])
+
+# current running example of energy calculation
+#n_body_plug.run_n_body('cc2', n_body={'cc2': 1})
 
 --------------------------------------------------------------------------
 
-Traceback (most recent call last):
-  File "/home/bgpeyton/installed/psi4/bin/psi4", line 260, in <module>
-    exec(content)
-  File "<string>", line 42, in <module>
-  File "./../n_body_plug/pymodule.py", line 74, in run_n_body
-    n_body_options = n_body.process_options(name, db, kwargs.pop('n_body'))
-  File "/home/bgpeyton/testspace/n_body_plug_test/n_body_plug/n_body.py", line 1063, in process_options
-    raise Exception('Unrecognized value for n_body input parameter. It may be '
-
-Exception: Unrecognized value for n_body input parameter. It may be  a bool, int, list, or dict.
-
-*** Psi4 encountered an error. Buy a developer more coffee!
-*** Resources and help at github.com/psi4/psi4.
+*** Psi4 exiting successfully. Buy a developer a beer!

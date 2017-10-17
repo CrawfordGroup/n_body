@@ -27,7 +27,7 @@ set n_body {
   print 1
 }
 
-n_body_plug.exampleFN()
+#n_body_plug.exampleFN()
 
 # Taylor's "newest" input file example:
 #properties('cc2', n_body={'cc2': 1}, properties=['polarizability'])
@@ -35,5 +35,9 @@ n_body_plug.exampleFN()
 # My proposed input file example:
 #my_nbody_plug.nbody(name, nbody_args= {}, properties = [])
 
+# current running example of properties calculation
 n_body_plug.run_n_body('cc2', n_body={'cc2': 1}, properties=['polarizability'])
+
+# current running example of energy calculation
+#n_body_plug.run_n_body('cc2', n_body={'cc2': 1})
 

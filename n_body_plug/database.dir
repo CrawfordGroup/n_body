@@ -7,5 +7,6 @@
 'num_threads', (3072, 4)
 'bsse', (3584, 10)
 'pcm', (4096, 4)
-'n_body_func', (4608, 20)
-'methods', (5120, 6)
+'n_body_func', (4608, 36)
+'methods', (5120, 19)
+'cc2', (6144, 690)

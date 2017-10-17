@@ -42,19 +42,19 @@
 ##### ORIGINALLY ALL OF THESE WERE COMMENTED OUT. #####
 ##### I WILL BE UNCOMMENTING/REPLACING AS NEEDED. #####
 
-#import collections
+import collections
 import psi4
 #import molutil
 #import proc
 #import sys
-#import copy
+import copy
 #import functional
 #import driver
 # driver no longer exists, see proc.py and procrouting folder
 #import atexit
 #import p4const
 #import math
-#import os
+import os
 #import p4util
 #import re
 
@@ -118,14 +118,17 @@ def initialize_database(database, kwargs):
     database['bsse']             = ''
     database['pcm']              = False
 #    database['n_body_func']      = kwargs.pop('n_body_func')
-    prop_arg = kwargs.get('properties', [])
-    if prop_arg == []:
+#    print(kwargs.get('properties',[])
+#    prop_arg = kwargs.get('properties', [])
+#    if prop_arg == []:
+    if 'properties' in kwargs:
+#        print("Looks like kwargs seems to have properties...")
         database['n_body_func'] = psi4.properties
 #        now this could be called like:
 #        database['n_body_func']()
     else:
+#        print("Looks like kwargs seems to have energy...")
         database['n_body_func'] = psi4.energy
-    database['n_body_func']      = 'properties' 
     database['methods']          = {}
 
 
@@ -232,22 +235,22 @@ def extend_database(database, kwargs):
 
 
 def banner(db):
-    psi4.print_out('\n')
-    psi4.print_out('\t\t ------------------------------ \n')
-    psi4.print_out('\t\t             N_Body             \n')
-    psi4.print_out('\n')
-    psi4.print_out('\t\t Input parameters \n')
-    psi4.print_out('\t\t ---------------- \n')
-    psi4.print_out('\t\t Job Type: {} \n'.format(db['n_body_func'].__name__))
-    psi4.print_out('\t\t Methods:\n')
+    psi4.print_stdout('\n')
+    psi4.print_stdout('\t\t ------------------------------ \n')
+    psi4.print_stdout('\t\t             N_Body             \n')
+    psi4.print_stdout('\n')
+    psi4.print_stdout('\t\t Input parameters \n')
+    psi4.print_stdout('\t\t ---------------- \n')
+    psi4.print_stdout('\t\t Job Type: {} \n'.format(db['n_body_func'].__name__))
+    psi4.print_stdout('\t\t Methods:\n')
     for method in db['methods']:
-        psi4.print_out('\t\t * {}:\t n <= '
+        psi4.print_stdout('\t\t * {}:\t n <= '
                        '{}\n'.format(method,db['methods'][method]))
-    psi4.print_out('\t\t Distributed: {} \n'.format(db['distributed']))
-    psi4.print_out('\n')
+    psi4.print_stdout('\t\t Distributed: {} \n'.format(db['distributed']))
+    psi4.print_stdout('\n')
     # STATUS
-    psi4.print_out('\t\t Current Status \n')
-    psi4.print_out('\t\t -------------- \n')
+    psi4.print_stdout('\t\t Current Status \n')
+    psi4.print_stdout('\t\t -------------- \n')
     input_message = """\n
     Input files have been generated for the above listed methods. You
     should run these in whatever way you prefer. Invoking psi4 while they run
@@ -271,74 +274,75 @@ def banner(db):
     shown.\n"""
     # Input files have been generated
     if db['inputs_generated']:
-        psi4.print_out(input_message)
+        psi4.print_stdout(input_message)
     # All the jobs have completed
     if db['jobs_complete']:
-        psi4.print_out(complete_message)
+        psi4.print_stdout(complete_message)
     else:
         for method in db['methods']:
-            psi4.print_out('        ==> {} <==\n'.format(method.upper()))
+            psi4.print_stdout('        ==> {} <==\n'.format(method.upper()))
             for n in range(1,db[method]['n_body_max']+1):
                 for job,stat in db[method][n]['job_status'].items():
                     if stat != 'complete':
-                        psi4.print_out('{} {}\n'.format(job,stat))
+                        psi4.print_stdout('{} {}\n'.format(job,stat))
 
-    # RESULTS
-    psi4.print_out('\t\t Results \n')
-    psi4.print_out('\t\t ------- \n')
-    for method in db['methods']:
-        psi4.print_out('        ==> {} <==\n'.format(method.upper()))
-        if psi4.get_global_option('PRINT') < 2:
-            psi4.print_out('    Tensor quantities not being printed. To print them '
-                           'increase print > 1 and rerun psi4.\n')
-        for result in db[method]['results']:
-            for n in range(1,db[method]['n_body_max']+1):
-                # Does this quantity exist?
-                if db[method][n][result][result]:
-                    # What type of quantity is it??
-                    if result in scalar_results:
-                        print_scalar(db, method, n, result)
-                    elif result in vector_results:
-                        print_vector(db, method, n, result)
-                    elif result in fscalar_results:
-                        print_fscalar(db, method, n, result)
-                    elif len(db[method][n][result][result]) % 9 == 0:
-                        print_rank_two(db, method, n, result)
-                    else:
-                        getattr(sys.modules[__name__],'print_{}_results'.format(result))(db,method,n)
-        #if 'rotation' in db[method]['results']:
-        #    for n in range(1,db[method]['n_body_max']+1):
-        #        print_mass_adjusted_rotation(db, method, n)
-    psi4.print_out('\t\t ------------------------------ \n')
+#    # RESULTS
+#    #### NOTE: SKIPPING RESULTS FOR NOW #####
+#    psi4.print_stdout('\t\t Results \n')
+#    psi4.print_stdout('\t\t ------- \n')
+#    for method in db['methods']:
+#        psi4.print_stdout('        ==> {} <==\n'.format(method.upper()))
+#        if psi4.get_global_option('PRINT') < 2:
+#            psi4.print_stdout('    Tensor quantities not being printed. To print them '
+#                           'increase print > 1 and rerun psi4.\n')
+#        for result in db[method]['results']:
+#            for n in range(1,db[method]['n_body_max']+1):
+#                # Does this quantity exist?
+#                if db[method][n][result][result]:
+#                    # What type of quantity is it??
+#                    if result in scalar_results:
+#                        print_scalar(db, method, n, result)
+#                    elif result in vector_results:
+#                        print_vector(db, method, n, result)
+#                    elif result in fscalar_results:
+#                        print_fscalar(db, method, n, result)
+#                    elif len(db[method][n][result][result]) % 9 == 0:
+#                        print_rank_two(db, method, n, result)
+#                    else:
+#                        getattr(sys.modules[__name__],'print_{}_results'.format(result))(db,method,n)
+#        #if 'rotation' in db[method]['results']:
+#        #    for n in range(1,db[method]['n_body_max']+1):
+#        #        print_mass_adjusted_rotation(db, method, n)
+    psi4.print_stdout('\t\t ------------------------------ \n')
 
 def print_scalar(db, method, n, result):
     # Print header
     if n == 1:
-        psi4.print_out('{:<58}'.format('        {}:    '.format(re.sub('_',' ',result).upper())))
-        psi4.print_out('\n\n')
+        psi4.print_stdout('{:<58}'.format('        {}:    '.format(re.sub('_',' ',result).upper())))
+        psi4.print_stdout('\n\n')
     # Print scalars
     corr = db[method][n][result]['correction']
     approx = db[method][n][result][result]
-    psi4.print_out('{:<58}'.format('            {} Correction:'.format(print_body(n))))
-    psi4.print_out('    {:> 22.14f}\n'.format(corr[0]))
-    psi4.print_out('{:<58}'.format('            {} Approximation:'.format(print_body(n))))
-    psi4.print_out('    {:> 22.14f}\n'.format(approx[0]))
+    psi4.print_stdout('{:<58}'.format('            {} Correction:'.format(print_body(n))))
+    psi4.print_stdout('    {:> 22.14f}\n'.format(corr[0]))
+    psi4.print_stdout('{:<58}'.format('            {} Approximation:'.format(print_body(n))))
+    psi4.print_stdout('    {:> 22.14f}\n'.format(approx[0]))
     if db['bsse'] == ('vmfc' or 'mbcp') and n > 1:
         mbcp_corr = db[method][n][result]['mbcp_correction']
         mbcp_approx = db[method][n][result]['mbcp_approximation']
-        psi4.print_out('{:<58}'.format('            MBCP({}) Correction:'.format(n)))
-        psi4.print_out('    {:> 22.14f}\n'.format(mbcp_corr[0]))
-        psi4.print_out('{:<58}'.format('            MBCP({}) Approximation:'.format(n)))
-        psi4.print_out('    {:> 22.14f}\n'.format(mbcp_approx[0]))
+        psi4.print_stdout('{:<58}'.format('            MBCP({}) Correction:'.format(n)))
+        psi4.print_stdout('    {:> 22.14f}\n'.format(mbcp_corr[0]))
+        psi4.print_stdout('{:<58}'.format('            MBCP({}) Approximation:'.format(n)))
+        psi4.print_stdout('    {:> 22.14f}\n'.format(mbcp_approx[0]))
     if db['bsse'] == 'vmfc' and n > 1:
         vmfc_corr = db[method][n][result]['vmfc_correction']
         vmfc_approx = db[method][n][result]['vmfc_approximation']
-        psi4.print_out('{:<58}'.format('            Valiron-Mayer {} Correction:'.format(print_body(n))))
-        psi4.print_out('    {:> 22.14f}\n'.format(vmfc_corr[0]))
-        psi4.print_out('{:<58}'.format('            Valiron-Mayer {} Approximation:'.format(print_body(n))))
-        psi4.print_out('    {:> 22.14f}\n'.format(vmfc_approx[0]))
-        psi4.print_out('{:<58}'.format('            VM {0} - {0} Approximation:'.format(print_body(n))))
-        psi4.print_out('    {:> 22.14f}\n'.format(vmfc_approx[0] - approx[0]))
+        psi4.print_stdout('{:<58}'.format('            Valiron-Mayer {} Correction:'.format(print_body(n))))
+        psi4.print_stdout('    {:> 22.14f}\n'.format(vmfc_corr[0]))
+        psi4.print_stdout('{:<58}'.format('            Valiron-Mayer {} Approximation:'.format(print_body(n))))
+        psi4.print_stdout('    {:> 22.14f}\n'.format(vmfc_approx[0]))
+        psi4.print_stdout('{:<58}'.format('            VM {0} - {0} Approximation:'.format(print_body(n))))
+        psi4.print_stdout('    {:> 22.14f}\n'.format(vmfc_approx[0] - approx[0]))
     # Print errors (but only if all fragments have been computed)
     molecule = psi4.get_active_molecule()
     if db[method].has_key(molecule.nfragments()):
@@ -346,44 +350,44 @@ def print_scalar(db, method, n, result):
             actual = db[method][molecule.nfragments()][result][result]
             error = [x-y for x,y in zip(approx,actual)]
             p_error = [(x/abs(y))*100 for x,y in zip(error,actual)]
-            psi4.print_out('{:<58}'.format('            {} Error:'.format(print_body(n))))
-            psi4.print_out('    {:> 22.14f}\n'.format(error[0]))
-            psi4.print_out('{:<58}'.format('            {} Percent Error:'.format(print_body(n))))
-            psi4.print_out('    {:> 22.14f}\n'.format(p_error[0]))
+            psi4.print_stdout('{:<58}'.format('            {} Error:'.format(print_body(n))))
+            psi4.print_stdout('    {:> 22.14f}\n'.format(error[0]))
+            psi4.print_stdout('{:<58}'.format('            {} Percent Error:'.format(print_body(n))))
+            psi4.print_stdout('    {:> 22.14f}\n'.format(p_error[0]))
         if db['bsse'] == ('vmfc' or 'mbcp') and n > 1:
             mbcp_corr = copy.deepcopy(db[method][n][result]['mbcp_correction'])
             mbcp_approx = copy.deepcopy(db[method][n][result]['mbcp_approximation'])
             actual = db[method][molecule.nfragments()][result]['mbcp_approximation']
             error = [x-y for x,y in zip(mbcp_approx,actual)]
             p_error = [(x/abs(y))*100 for x,y in zip(error,actual)]
-            psi4.print_out('{:<58}'.format('            MBCP({}) Error:'.format(n)))
+            psi4.print_stdout('{:<58}'.format('            MBCP({}) Error:'.format(n)))
             while error:
-                psi4.print_out('    {:> 22.14f}'.format(error.pop(0)))
-            psi4.print_out('\n')
-            psi4.print_out('{:<58}'.format('            MBCP({}) Percent Error:'.format(n)))
+                psi4.print_stdout('    {:> 22.14f}'.format(error.pop(0)))
+            psi4.print_stdout('\n')
+            psi4.print_stdout('{:<58}'.format('            MBCP({}) Percent Error:'.format(n)))
             while p_error:
-                psi4.print_out('    {:> 22.14f}'.format(p_error.pop(0)))
-            psi4.print_out('\n')
+                psi4.print_stdout('    {:> 22.14f}'.format(p_error.pop(0)))
+            psi4.print_stdout('\n')
         if db['bsse'] == 'vmfc' and n > 1:
             vmfc_corr = copy.deepcopy(db[method][n][result]['vmfc_correction'])
             vmfc_approx = copy.deepcopy(db[method][n][result]['vmfc_approximation'])
             actual = db[method][molecule.nfragments()][result]['vmfc_approximation']
             error = [x-y for x,y in zip(vmfc_approx,actual)]
             p_error = [(x/abs(y))*100 for x,y in zip(error,actual)]
-            psi4.print_out('{:<58}'.format('            Valiron-Mayer {} Error:'.format(print_body(n))))
+            psi4.print_stdout('{:<58}'.format('            Valiron-Mayer {} Error:'.format(print_body(n))))
             while error:
-                psi4.print_out('    {:> 22.14f}'.format(error.pop(0)))
-            psi4.print_out('\n')
-            psi4.print_out('{:<58}'.format('            Valiron-Mayer {} Percent Error:'.format(print_body(n))))
+                psi4.print_stdout('    {:> 22.14f}'.format(error.pop(0)))
+            psi4.print_stdout('\n')
+            psi4.print_stdout('{:<58}'.format('            Valiron-Mayer {} Percent Error:'.format(print_body(n))))
             while p_error:
-                psi4.print_out('    {:> 22.14f}'.format(p_error.pop(0)))
-            psi4.print_out('\n')
+                psi4.print_stdout('    {:> 22.14f}'.format(p_error.pop(0)))
+            psi4.print_stdout('\n')
     # Print Interaction scalars 
     if n > 1:
         mono_approx = db[method][1][result][result]
         interact = [x-y for x,y in zip(approx,mono_approx)]
-        psi4.print_out('{:<58}'.format('            {} Interaction Energy Approximation:'.format(print_body(n))))
-        psi4.print_out('    {:> 22.14f}\n'.format(interact[0]))
+        psi4.print_stdout('{:<58}'.format('            {} Interaction Energy Approximation:'.format(print_body(n))))
+        psi4.print_stdout('    {:> 22.14f}\n'.format(interact[0]))
         # Print the Interaction errors
         if db[method].has_key(molecule.nfragments()):
             if db[method][molecule.nfragments()][result][result]:
@@ -391,94 +395,94 @@ def print_scalar(db, method, n, result):
                 actual_interact = [x-y for x,y in zip(actual,mono_approx)]
                 error = [x-y for x,y in zip(interact,actual_interact)]
                 p_error = [(x/abs(y))*100 for x,y in zip(error,actual_interact)]
-                psi4.print_out('{:<58}'.format('            {} Interaction Error:'.format(print_body(n))))
-                psi4.print_out('    {:> 22.14f}\n'.format(error[0]))
-                psi4.print_out('{:<58}'.format('            {} Interaction Percent Error:'.format(print_body(n))))
-                psi4.print_out('    {:> 22.14f}\n\n'.format(p_error[0]))
+                psi4.print_stdout('{:<58}'.format('            {} Interaction Error:'.format(print_body(n))))
+                psi4.print_stdout('    {:> 22.14f}\n'.format(error[0]))
+                psi4.print_stdout('{:<58}'.format('            {} Interaction Percent Error:'.format(print_body(n))))
+                psi4.print_stdout('    {:> 22.14f}\n\n'.format(p_error[0]))
         else:
-            psi4.print_out('\n')
+            psi4.print_stdout('\n')
     else:
-        psi4.print_out('\n')
+        psi4.print_stdout('\n')
 
 def print_vector(db, method, n, result):
     # Print header
     if n == 1:
         print(result)
-        psi4.print_out('{:<58}'.format('        {}:    '.format(re.sub('_',' ',result).upper())))
-        psi4.print_out('    {:>14}'.format('X-component'))
-        psi4.print_out('    {:>14}'.format('Y-component'))
-        psi4.print_out('    {:>14}'.format('Z-component'))
-        psi4.print_out('    {:>14}'.format('Total'))
-        psi4.print_out('\n\n')
+        psi4.print_stdout('{:<58}'.format('        {}:    '.format(re.sub('_',' ',result).upper())))
+        psi4.print_stdout('    {:>14}'.format('X-component'))
+        psi4.print_stdout('    {:>14}'.format('Y-component'))
+        psi4.print_stdout('    {:>14}'.format('Z-component'))
+        psi4.print_stdout('    {:>14}'.format('Total'))
+        psi4.print_stdout('\n\n')
     # Print components
     if db[method][n][result][result]:
         corr = copy.deepcopy(db[method][n][result]['correction']) 
         approx = copy.deepcopy(db[method][n][result][result])
-        psi4.print_out('{:<58}'.format('            {} Correction:'.format(print_body(n))))
+        psi4.print_stdout('{:<58}'.format('            {} Correction:'.format(print_body(n))))
         total = 0
         while corr:
             current = corr.pop(0)
-            psi4.print_out('    {:> 14.6f}'.format(current))
+            psi4.print_stdout('    {:> 14.6f}'.format(current))
             total += current ** 2
-        psi4.print_out('    {:> 14.6f}'.format(math.sqrt(total)))
-        psi4.print_out('\n')
-        psi4.print_out('{:<58}'.format('            {} Approximation:'.format(print_body(n))))
+        psi4.print_stdout('    {:> 14.6f}'.format(math.sqrt(total)))
+        psi4.print_stdout('\n')
+        psi4.print_stdout('{:<58}'.format('            {} Approximation:'.format(print_body(n))))
         total = 0
         while approx:
             current = approx.pop(0)
-            psi4.print_out('    {:> 14.6f}'.format(current))
+            psi4.print_stdout('    {:> 14.6f}'.format(current))
             total += current ** 2
-        psi4.print_out('    {:> 14.6f}'.format(math.sqrt(total)))
-        psi4.print_out('\n')
+        psi4.print_stdout('    {:> 14.6f}'.format(math.sqrt(total)))
+        psi4.print_stdout('\n')
     if db['bsse'] == ('vmfc' or 'mbcp') and n > 1:
         mbcp_corr = copy.deepcopy(db[method][n][result]['mbcp_correction'])
         mbcp_approx = copy.deepcopy(db[method][n][result]['mbcp_approximation'])
-        psi4.print_out('{:<58}'.format('            MBCP({}) Correction:'.format(n)))
+        psi4.print_stdout('{:<58}'.format('            MBCP({}) Correction:'.format(n)))
         total = 0
         while mbcp_corr:
             current = mbcp_corr.pop(0)
-            psi4.print_out('    {:> 14.6f}'.format(current))
+            psi4.print_stdout('    {:> 14.6f}'.format(current))
             total += current ** 2
-        psi4.print_out('    {:> 14.6f}'.format(math.sqrt(total)))
-        psi4.print_out('\n')
-        psi4.print_out('{:<58}'.format('            MBCP({}) Approximation:'.format(n)))
+        psi4.print_stdout('    {:> 14.6f}'.format(math.sqrt(total)))
+        psi4.print_stdout('\n')
+        psi4.print_stdout('{:<58}'.format('            MBCP({}) Approximation:'.format(n)))
         total = 0
         while mbcp_approx:
             current = mbcp_approx.pop(0)
-            psi4.print_out('    {:> 14.6f}'.format(current))
+            psi4.print_stdout('    {:> 14.6f}'.format(current))
             total += current ** 2
-        psi4.print_out('    {:> 14.6f}'.format(math.sqrt(total)))
-        psi4.print_out('\n')
+        psi4.print_stdout('    {:> 14.6f}'.format(math.sqrt(total)))
+        psi4.print_stdout('\n')
     if db['bsse'] == 'vmfc' and n > 1:
         vmfc_corr = copy.deepcopy(db[method][n][result]['vmfc_correction'])
         vmfc_approx = copy.deepcopy(db[method][n][result]['vmfc_approximation'])
-        psi4.print_out('{:<58}'.format('            Valiron-Mayer {} Correction:'.format(print_body(n))))
+        psi4.print_stdout('{:<58}'.format('            Valiron-Mayer {} Correction:'.format(print_body(n))))
         total = 0
         while vmfc_corr:
             current = vmfc_corr.pop(0)
-            psi4.print_out('    {:> 14.6f}'.format(current))
+            psi4.print_stdout('    {:> 14.6f}'.format(current))
             total += current ** 2
-        psi4.print_out('    {:> 14.6f}'.format(math.sqrt(total)))
-        psi4.print_out('\n')
-        psi4.print_out('{:<58}'.format('            Valiron-Mayer {} Approximation:'.format(print_body(n))))
+        psi4.print_stdout('    {:> 14.6f}'.format(math.sqrt(total)))
+        psi4.print_stdout('\n')
+        psi4.print_stdout('{:<58}'.format('            Valiron-Mayer {} Approximation:'.format(print_body(n))))
         total = 0
         while vmfc_approx:
             current = vmfc_approx.pop(0)
-            psi4.print_out('    {:> 14.6f}'.format(current))
+            psi4.print_stdout('    {:> 14.6f}'.format(current))
             total += current ** 2
-        psi4.print_out('    {:> 14.6f}'.format(math.sqrt(total)))
-        psi4.print_out('\n')
-        psi4.print_out('{:<58}'.format('            VM {0} - {0} Approximation:'.format(print_body(n))))
+        psi4.print_stdout('    {:> 14.6f}'.format(math.sqrt(total)))
+        psi4.print_stdout('\n')
+        psi4.print_stdout('{:<58}'.format('            VM {0} - {0} Approximation:'.format(print_body(n))))
         approx = copy.deepcopy(db[method][n][result][result])
         vmfc_approx = copy.deepcopy(db[method][n][result]['vmfc_approximation'])
         total = 0
         while vmfc_approx:
             current = approx.pop(0)
             vmfc_current = vmfc_approx.pop(0)
-            psi4.print_out('    {:> 14.6f}'.format(vmfc_current - current))
+            psi4.print_stdout('    {:> 14.6f}'.format(vmfc_current - current))
             total += (vmfc_current - current) ** 2
-        psi4.print_out('    {:> 14.6f}'.format(math.sqrt(total)))
-        psi4.print_out('\n')
+        psi4.print_stdout('    {:> 14.6f}'.format(math.sqrt(total)))
+        psi4.print_stdout('\n')
     # Print errors (but only if all fragments have been computed)
     #
     # ERROR printing is accomplished by computing an error vector. This vector takes into account both the
@@ -500,20 +504,20 @@ def print_vector(db, method, n, result):
             actual_total = math.sqrt(sum([x*y for x,y in zip(actual,actual)]))
             error = [x-y for x,y in zip(approx,actual)]
             p_error = [(x/y)*100 for x,y in zip(error,actual)]
-            psi4.print_out('{:<58}'.format('            {} Error:'.format(print_body(n))))
+            psi4.print_stdout('{:<58}'.format('            {} Error:'.format(print_body(n))))
             error_total = 0
             while error:
                 current = error.pop(0)
-                psi4.print_out('    {:> 14.6f}'.format(current))
+                psi4.print_stdout('    {:> 14.6f}'.format(current))
                 error_total += current ** 2
-            psi4.print_out('    {:> 14.6f}'.format(math.sqrt(error_total)))
-            psi4.print_out('\n')
-            psi4.print_out('{:<58}'.format('            {} Percent Error:'.format(print_body(n))))
+            psi4.print_stdout('    {:> 14.6f}'.format(math.sqrt(error_total)))
+            psi4.print_stdout('\n')
+            psi4.print_stdout('{:<58}'.format('            {} Percent Error:'.format(print_body(n))))
             while p_error:
                 current = p_error.pop(0)
-                psi4.print_out('    {:> 14.6f}'.format(current))
-            psi4.print_out('    {:> 14.6f}'.format((math.sqrt(error_total) / actual_total) * 100))
-            psi4.print_out('\n')
+                psi4.print_stdout('    {:> 14.6f}'.format(current))
+            psi4.print_stdout('    {:> 14.6f}'.format((math.sqrt(error_total) / actual_total) * 100))
+            psi4.print_stdout('\n')
         if db['bsse'] == ('vmfc' or 'mbcp') and n > 1:
             mbcp_corr = copy.deepcopy(db[method][n][result]['mbcp_correction'])
             mbcp_approx = copy.deepcopy(db[method][n][result]['mbcp_approximation'])
@@ -521,20 +525,20 @@ def print_vector(db, method, n, result):
             actual_total = math.sqrt(sum([x*y for x,y in zip(actual,actual)]))
             error = [x-y for x,y in zip(mbcp_approx,actual)]
             p_error = [(x/abs(y))*100 for x,y in zip(error,actual)]
-            psi4.print_out('{:<58}'.format('            MBCP({}) Error:'.format(n)))
+            psi4.print_stdout('{:<58}'.format('            MBCP({}) Error:'.format(n)))
             error_total = 0
             while error:
                 current = error.pop(0)
-                psi4.print_out('    {:> 14.6f}'.format(current))
+                psi4.print_stdout('    {:> 14.6f}'.format(current))
                 error_total += current ** 2
-            psi4.print_out('    {:> 14.6f}'.format(math.sqrt(error_total)))
-            psi4.print_out('\n')
-            psi4.print_out('{:<58}'.format('            MBCP({}) Percent Error:'.format(n)))
+            psi4.print_stdout('    {:> 14.6f}'.format(math.sqrt(error_total)))
+            psi4.print_stdout('\n')
+            psi4.print_stdout('{:<58}'.format('            MBCP({}) Percent Error:'.format(n)))
             while p_error:
                 current = p_error.pop(0)
-                psi4.print_out('    {:> 14.6f}'.format(current))
-            psi4.print_out('    {:> 14.6f}'.format((math.sqrt(error_total) / actual_total) * 100))
-            psi4.print_out('\n')
+                psi4.print_stdout('    {:> 14.6f}'.format(current))
+            psi4.print_stdout('    {:> 14.6f}'.format((math.sqrt(error_total) / actual_total) * 100))
+            psi4.print_stdout('\n')
         if db['bsse'] == 'vmfc' and n > 1:
             vmfc_corr = copy.deepcopy(db[method][n][result]['vmfc_correction'])
             vmfc_approx = copy.deepcopy(db[method][n][result]['vmfc_approximation'])
@@ -542,32 +546,32 @@ def print_vector(db, method, n, result):
             actual_total = math.sqrt(sum([x*y for x,y in zip(actual,actual)]))
             error = [x-y for x,y in zip(vmfc_approx,actual)]
             p_error = [(x/abs(y))*100 for x,y in zip(error,actual)]
-            psi4.print_out('{:<58}'.format('            Valiron-Mayer {} Error:'.format(print_body(n))))
+            psi4.print_stdout('{:<58}'.format('            Valiron-Mayer {} Error:'.format(print_body(n))))
             while error:
                 current = error.pop(0)
-                psi4.print_out('    {:> 14.6f}'.format(current))
+                psi4.print_stdout('    {:> 14.6f}'.format(current))
                 error_total += current ** 2
-            psi4.print_out('    {:> 14.6f}'.format(math.sqrt(error_total)))
-            psi4.print_out('\n')
-            psi4.print_out('{:<58}'.format('            Valiron-Mayer {} Percent Error:'.format(print_body(n))))
+            psi4.print_stdout('    {:> 14.6f}'.format(math.sqrt(error_total)))
+            psi4.print_stdout('\n')
+            psi4.print_stdout('{:<58}'.format('            Valiron-Mayer {} Percent Error:'.format(print_body(n))))
             while p_error:
                 current = p_error.pop(0)
-                psi4.print_out('    {:> 14.6f}'.format(current))
-            psi4.print_out('    {:> 14.6f}'.format((math.sqrt(error_total) / actual_total) * 100))
-            psi4.print_out('\n')
+                psi4.print_stdout('    {:> 14.6f}'.format(current))
+            psi4.print_stdout('    {:> 14.6f}'.format((math.sqrt(error_total) / actual_total) * 100))
+            psi4.print_stdout('\n')
     # Print Interaction properties (Is this even meaningful?)
     if n > 1:
         approx = copy.deepcopy(db[method][n][result][result])
         mono_approx = db[method][1][result][result]
         interact = [x-y for x,y in zip(approx,mono_approx)]
-        psi4.print_out('{:<58}'.format('            {} Interaction Approximation:'.format(print_body(n))))
+        psi4.print_stdout('{:<58}'.format('            {} Interaction Approximation:'.format(print_body(n))))
         total = 0
         while interact: 
             current = interact.pop(0)
-            psi4.print_out('    {:> 14.6f}'.format(current))
+            psi4.print_stdout('    {:> 14.6f}'.format(current))
             total += current ** 2
-        psi4.print_out('    {:> 14.6f}'.format(math.sqrt(total)))
-        psi4.print_out('\n')
+        psi4.print_stdout('    {:> 14.6f}'.format(math.sqrt(total)))
+        psi4.print_stdout('\n')
         # Print the Interaction energy errors
         if db[method].has_key(molecule.nfragments()):
             if db[method][molecule.nfragments()][result][result]:
@@ -577,24 +581,24 @@ def print_vector(db, method, n, result):
                 interact = [x-y for x,y in zip(approx,mono_approx)]
                 error = [x-y for x,y in zip(interact,actual_interact)]
                 p_error = [(x/y)*100 for x,y in zip(error,actual_interact)]
-                psi4.print_out('{:<58}'.format('            {} Interaction Error:'.format(print_body(n))))
+                psi4.print_stdout('{:<58}'.format('            {} Interaction Error:'.format(print_body(n))))
                 error_total = 0
                 while error:
                     current = error.pop(0)
-                    psi4.print_out('    {:> 14.6f}'.format(current))
+                    psi4.print_stdout('    {:> 14.6f}'.format(current))
                     error_total += current ** 2
-                psi4.print_out('    {:> 14.6f}'.format(math.sqrt(error_total)))
-                psi4.print_out('\n')
-                psi4.print_out('{:<58}'.format('            {} Interaction Percent Error:'.format(print_body(n))))
+                psi4.print_stdout('    {:> 14.6f}'.format(math.sqrt(error_total)))
+                psi4.print_stdout('\n')
+                psi4.print_stdout('{:<58}'.format('            {} Interaction Percent Error:'.format(print_body(n))))
                 while p_error:
                     current = p_error.pop(0)
-                    psi4.print_out('    {:> 14.6f}'.format(current))
-                psi4.print_out('    {:> 14.6f}'.format((math.sqrt(error_total) / actual_inter_total) * 100))
-                psi4.print_out('\n\n')
+                    psi4.print_stdout('    {:> 14.6f}'.format(current))
+                psi4.print_stdout('    {:> 14.6f}'.format((math.sqrt(error_total) / actual_inter_total) * 100))
+                psi4.print_stdout('\n\n')
         else:
-            psi4.print_out('\n')
+            psi4.print_stdout('\n')
     else:
-        psi4.print_out('\n')
+        psi4.print_stdout('\n')
 
 def print_fscalar(db, method, n, result):
 #def print_rotation_results(db, method, n):
@@ -603,24 +607,24 @@ def print_fscalar(db, method, n, result):
         units = omega.pop()
     # Print header
     if n == 1:
-        psi4.print_out('{:<58}'.format('        {}:    '.format(re.sub('_',' ',result).upper())))
+        psi4.print_stdout('{:<58}'.format('        {}:    '.format(re.sub('_',' ',result).upper())))
         while omega:
-            psi4.print_out('    {:> 9.2f} {}'.format(omega.pop(0),units))
-        psi4.print_out('\n\n')
+            psi4.print_stdout('    {:> 9.2f} {}'.format(omega.pop(0),units))
+        psi4.print_stdout('\n\n')
     # Print n-body results
     if db[method][n][result][result]:
         corr = copy.deepcopy(db[method][n][result]['correction']) 
         approx = copy.deepcopy(db[method][n][result][result])
-        psi4.print_out('{:<58}'.format('            {} Correction:'.format(print_body(n))))
+        psi4.print_stdout('{:<58}'.format('            {} Correction:'.format(print_body(n))))
         while corr:
-            psi4.print_out('    {:> 12.6f}'.format(corr.pop(0)))
-        psi4.print_out('\n')
-        psi4.print_out('{:<58}'.format('            {} Approximation:'.format(print_body(n))))
+            psi4.print_stdout('    {:> 12.6f}'.format(corr.pop(0)))
+        psi4.print_stdout('\n')
+        psi4.print_stdout('{:<58}'.format('            {} Approximation:'.format(print_body(n))))
         while approx:
-            psi4.print_out('    {:> 12.6f}'.format(approx.pop(0)))
-        #psi4.print_out('\n')
-        psi4.print_out('\n            {:->118}\n'.format(''))
-        psi4.print_out('{:<58}\n'.format('            Cluster Contributions: (Distance)'))
+            psi4.print_stdout('    {:> 12.6f}'.format(approx.pop(0)))
+        #psi4.print_stdout('\n')
+        psi4.print_stdout('\n            {:->118}\n'.format(''))
+        psi4.print_stdout('{:<58}\n'.format('            Cluster Contributions: (Distance)'))
         # Print cluster contributions
         mol = psi4.get_active_molecule()
         indexes = molutil.extract_cluster_indexing(mol, n)
@@ -628,50 +632,50 @@ def print_fscalar(db, method, n, result):
             index_dir = proc.cluster_dir(index)
             distance  = cluster_distance(n,index)
             try:
-                psi4.print_out('{:<58}'.format('              {}                  ({: 8.2f})'.format(index_dir,distance)))
+                psi4.print_stdout('{:<58}'.format('              {}                  ({: 8.2f})'.format(index_dir,distance)))
             except:
-                psi4.print_out('{:<58}'.format('              {}                           '.format(index_dir)))
+                psi4.print_stdout('{:<58}'.format('              {}                           '.format(index_dir)))
             current = db[method][n][result]['cooked_data'][index_dir]
             while current:
-                psi4.print_out('    {:> 12.6f}'.format(current.pop(0)))
-            psi4.print_out('\n')
-        psi4.print_out('\n            {:->118}\n'.format(''))
+                psi4.print_stdout('    {:> 12.6f}'.format(current.pop(0)))
+            psi4.print_stdout('\n')
+        psi4.print_stdout('\n            {:->118}\n'.format(''))
 
     # Print BSSE results
     if db['bsse'] == ('vmfc' or 'mbcp') and n > 1:
         mbcp_corr = copy.deepcopy(db[method][n][result]['mbcp_correction'])
         mbcp_approx = copy.deepcopy(db[method][n][result]['mbcp_approximation'])
-        psi4.print_out('{:<58}'.format('            MBCP({}) Correction:'.format(n)))
+        psi4.print_stdout('{:<58}'.format('            MBCP({}) Correction:'.format(n)))
         while mbcp_corr:
-            psi4.print_out('    {:> 12.6f}'.format(mbcp_corr.pop(0)))
-        psi4.print_out('\n')
-        psi4.print_out('{:<58}'.format('            MBCP({}) Approximation:'.format(n)))
+            psi4.print_stdout('    {:> 12.6f}'.format(mbcp_corr.pop(0)))
+        psi4.print_stdout('\n')
+        psi4.print_stdout('{:<58}'.format('            MBCP({}) Approximation:'.format(n)))
         while mbcp_approx:
-            psi4.print_out('    {:> 12.6f}'.format(mbcp_approx.pop(0)))
-        psi4.print_out('\n')
-        psi4.print_out('{:<58}'.format('            MBCP({0}) - {1} Approximation:'.format(n,print_body(n))))
+            psi4.print_stdout('    {:> 12.6f}'.format(mbcp_approx.pop(0)))
+        psi4.print_stdout('\n')
+        psi4.print_stdout('{:<58}'.format('            MBCP({0}) - {1} Approximation:'.format(n,print_body(n))))
         approx = copy.deepcopy(db[method][n][result][result])
         mbcp_approx = copy.deepcopy(db[method][n][result]['mbcp_approximation'])
         while mbcp_approx:
-            psi4.print_out('    {:> 12.6f}'.format(mbcp_approx.pop(0) - approx.pop(0)))
-        psi4.print_out('\n')
+            psi4.print_stdout('    {:> 12.6f}'.format(mbcp_approx.pop(0) - approx.pop(0)))
+        psi4.print_stdout('\n')
     if db['bsse'] == 'vmfc' and n > 1:
         vmfc_corr = copy.deepcopy(db[method][n][result]['vmfc_correction'])
         vmfc_approx = copy.deepcopy(db[method][n][result]['vmfc_approximation'])
-        psi4.print_out('{:<58}'.format('            Valiron-Mayer {} Correction:'.format(print_body(n))))
+        psi4.print_stdout('{:<58}'.format('            Valiron-Mayer {} Correction:'.format(print_body(n))))
         while vmfc_corr:
-            psi4.print_out('    {:> 12.6f}'.format(vmfc_corr.pop(0)))
-        psi4.print_out('\n')
-        psi4.print_out('{:<58}'.format('            Valiron-Mayer {} Approximation:'.format(print_body(n))))
+            psi4.print_stdout('    {:> 12.6f}'.format(vmfc_corr.pop(0)))
+        psi4.print_stdout('\n')
+        psi4.print_stdout('{:<58}'.format('            Valiron-Mayer {} Approximation:'.format(print_body(n))))
         while vmfc_approx:
-            psi4.print_out('    {:> 12.6f}'.format(vmfc_approx.pop(0)))
-        psi4.print_out('\n')
-        psi4.print_out('{:<58}'.format('            VM {0} - {0} Approximation:'.format(print_body(n))))
+            psi4.print_stdout('    {:> 12.6f}'.format(vmfc_approx.pop(0)))
+        psi4.print_stdout('\n')
+        psi4.print_stdout('{:<58}'.format('            VM {0} - {0} Approximation:'.format(print_body(n))))
         approx = copy.deepcopy(db[method][n][result][result])
         vmfc_approx = copy.deepcopy(db[method][n][result]['vmfc_approximation'])
         while vmfc_approx:
-            psi4.print_out('    {:> 12.6f}'.format(vmfc_approx.pop(0) - approx.pop(0)))
-        psi4.print_out('\n')
+            psi4.print_stdout('    {:> 12.6f}'.format(vmfc_approx.pop(0) - approx.pop(0)))
+        psi4.print_stdout('\n')
     # Print errors (but only if all fragments have been computed)
     molecule = psi4.get_active_molecule()
     if db[method].has_key(molecule.nfragments()):
@@ -680,50 +684,50 @@ def print_fscalar(db, method, n, result):
             actual = db[method][molecule.nfragments()][result][result]
             error = [x-y for x,y in zip(approx,actual)]
             p_error = [(x/abs(y))*100 for x,y in zip(error,actual)]
-            psi4.print_out('{:<58}'.format('            {} Error:'.format(print_body(n))))
+            psi4.print_stdout('{:<58}'.format('            {} Error:'.format(print_body(n))))
             while error:
-                psi4.print_out('    {:> 12.6f}'.format(error.pop(0)))
-            psi4.print_out('\n')
-            psi4.print_out('{:<58}'.format('            {} Percent Error:'.format(print_body(n))))
+                psi4.print_stdout('    {:> 12.6f}'.format(error.pop(0)))
+            psi4.print_stdout('\n')
+            psi4.print_stdout('{:<58}'.format('            {} Percent Error:'.format(print_body(n))))
             while p_error:
-                psi4.print_out('    {:> 12.6f}'.format(p_error.pop(0)))
-            psi4.print_out('\n')
+                psi4.print_stdout('    {:> 12.6f}'.format(p_error.pop(0)))
+            psi4.print_stdout('\n')
         if db['bsse'] == ('vmfc' or 'mbcp') and n > 1:
             mbcp_corr = copy.deepcopy(db[method][n][result]['mbcp_correction'])
             mbcp_approx = copy.deepcopy(db[method][n][result]['mbcp_approximation'])
             actual = db[method][molecule.nfragments()][result]['mbcp_approximation']
             error = [x-y for x,y in zip(mbcp_approx,actual)]
             p_error = [(x/abs(y))*100 for x,y in zip(error,actual)]
-            psi4.print_out('{:<58}'.format('            MBCP({}) Error:'.format(n)))
+            psi4.print_stdout('{:<58}'.format('            MBCP({}) Error:'.format(n)))
             while error:
-                psi4.print_out('    {:> 12.6f}'.format(error.pop(0)))
-            psi4.print_out('\n')
-            psi4.print_out('{:<58}'.format('            MBCP({}) Percent Error:'.format(n)))
+                psi4.print_stdout('    {:> 12.6f}'.format(error.pop(0)))
+            psi4.print_stdout('\n')
+            psi4.print_stdout('{:<58}'.format('            MBCP({}) Percent Error:'.format(n)))
             while p_error:
-                psi4.print_out('    {:> 12.6f}'.format(p_error.pop(0)))
-            psi4.print_out('\n')
+                psi4.print_stdout('    {:> 12.6f}'.format(p_error.pop(0)))
+            psi4.print_stdout('\n')
         if db['bsse'] == 'vmfc' and n > 1:
             vmfc_corr = copy.deepcopy(db[method][n][result]['vmfc_correction'])
             vmfc_approx = copy.deepcopy(db[method][n][result]['vmfc_approximation'])
             actual = db[method][molecule.nfragments()][result]['vmfc_approximation']
             error = [x-y for x,y in zip(vmfc_approx,actual)]
             p_error = [(x/abs(y))*100 for x,y in zip(error,actual)]
-            psi4.print_out('{:<58}'.format('            Valiron-Mayer {} Error:'.format(print_body(n))))
+            psi4.print_stdout('{:<58}'.format('            Valiron-Mayer {} Error:'.format(print_body(n))))
             while error:
-                psi4.print_out('    {:> 12.6f}'.format(error.pop(0)))
-            psi4.print_out('\n')
-            psi4.print_out('{:<58}'.format('            Valiron-Mayer {} Percent Error:'.format(print_body(n))))
+                psi4.print_stdout('    {:> 12.6f}'.format(error.pop(0)))
+            psi4.print_stdout('\n')
+            psi4.print_stdout('{:<58}'.format('            Valiron-Mayer {} Percent Error:'.format(print_body(n))))
             while p_error:
-                psi4.print_out('    {:> 12.6f}'.format(p_error.pop(0)))
-            psi4.print_out('\n')
+                psi4.print_stdout('    {:> 12.6f}'.format(p_error.pop(0)))
+            psi4.print_stdout('\n')
     # Print Interaction properties (Is this even meaningful?)
     if n > 1:
         mono_approx = db[method][1][result][result]
         interact = [x-y for x,y in zip(approx,mono_approx)]
-        psi4.print_out('{:<58}'.format('            {} Interaction Approximation:'.format(print_body(n))))
+        psi4.print_stdout('{:<58}'.format('            {} Interaction Approximation:'.format(print_body(n))))
         while interact: 
-            psi4.print_out('    {:> 12.6f}'.format(interact.pop(0)))
-        psi4.print_out('\n')
+            psi4.print_stdout('    {:> 12.6f}'.format(interact.pop(0)))
+        psi4.print_stdout('\n')
         # Print the Interaction energy errors
         if db[method].has_key(molecule.nfragments()):
             if db[method][molecule.nfragments()][result][result]:
@@ -732,31 +736,31 @@ def print_fscalar(db, method, n, result):
                 interact = [x-y for x,y in zip(approx,mono_approx)]
                 error = [x-y for x,y in zip(interact,actual_interact)]
                 p_error = [(x/abs(y))*100 for x,y in zip(error,actual_interact)]
-                psi4.print_out('{:<58}'.format('            {} Interaction Error:'.format(print_body(n))))
+                psi4.print_stdout('{:<58}'.format('            {} Interaction Error:'.format(print_body(n))))
                 while error:
-                    psi4.print_out('    {:> 12.6f}'.format(error.pop(0)))
-                psi4.print_out('\n')
-                psi4.print_out('{:<58}'.format('            {} Interaction Percent Error:'.format(print_body(n))))
+                    psi4.print_stdout('    {:> 12.6f}'.format(error.pop(0)))
+                psi4.print_stdout('\n')
+                psi4.print_stdout('{:<58}'.format('            {} Interaction Percent Error:'.format(print_body(n))))
                 while p_error:
-                    psi4.print_out('    {:> 12.6f}'.format(p_error.pop(0)))
-                psi4.print_out('\n\n')
+                    psi4.print_stdout('    {:> 12.6f}'.format(p_error.pop(0)))
+                psi4.print_stdout('\n\n')
         else:
-            psi4.print_out('\n')
+            psi4.print_stdout('\n')
     else:
-        psi4.print_out('\n')
+        psi4.print_stdout('\n')
 
 def print_cc_energy_results(db, method, n):
     if n == 1:
-        psi4.print_out('{:<58}'.format('        CC Energy:     '))
-        psi4.print_out('\n\n')
+        psi4.print_stdout('{:<58}'.format('        CC Energy:     '))
+        psi4.print_stdout('\n\n')
     # Print CC energies
     if db[method][n]['cc_energy']['cc_energy']:
         corr = db[method][n]['cc_energy']['correction']
         approx = db[method][n]['cc_energy']['cc_energy']
-        psi4.print_out('{:<58}'.format('            {} Correction:'.format(print_body(n))))
-        psi4.print_out('    {:> 22.14f}\n'.format(corr[0]))
-        psi4.print_out('{:<58}'.format('            {} Approximation:'.format(print_body(n))))
-        psi4.print_out('    {:> 22.14f}\n'.format(approx[0]))
+        psi4.print_stdout('{:<58}'.format('            {} Correction:'.format(print_body(n))))
+        psi4.print_stdout('    {:> 22.14f}\n'.format(corr[0]))
+        psi4.print_stdout('{:<58}'.format('            {} Approximation:'.format(print_body(n))))
+        psi4.print_stdout('    {:> 22.14f}\n'.format(approx[0]))
         # Print CC energy errors
         #molecule = psi4.get_active_molecule()
         #if db[method][molecule.nfragments()]['cc_energy']['']
@@ -765,10 +769,10 @@ def print_cc_energy_results(db, method, n):
         if n > 1:
             mono_approx = db[method][1]['cc_energy']['cc_energy']
             interact = [x-y for x,y in zip(approx,mono_approx)]
-            psi4.print_out('{:<58}'.format('            {} Interaction Energy Approximation:'.format(print_body(n))))
-            psi4.print_out('    {:> 22.14f}\n\n'.format(interact[0]))
+            psi4.print_stdout('{:<58}'.format('            {} Interaction Energy Approximation:'.format(print_body(n))))
+            psi4.print_stdout('    {:> 22.14f}\n\n'.format(interact[0]))
         else:
-            psi4.print_out('\n')
+            psi4.print_stdout('\n')
 
 
 def print_polarizability_results(db, method, n):
@@ -776,50 +780,50 @@ def print_polarizability_results(db, method, n):
     if len(omega) > 1:
         units = omega.pop()
     if n == 1:
-        psi4.print_out('{:<58}'.format('        POLARIZABILITY:    '))
+        psi4.print_stdout('{:<58}'.format('        POLARIZABILITY:    '))
         while omega:
-            psi4.print_out('    {:> 9.2f} {}'.format(omega.pop(0),units))
-        psi4.print_out('\n\n')
+            psi4.print_stdout('    {:> 9.2f} {}'.format(omega.pop(0),units))
+        psi4.print_stdout('\n\n')
     if db[method][n]['polarizability']['polarizability']:
         corr = copy.deepcopy(db[method][n]['polarizability']['correction']) 
         approx = copy.deepcopy(db[method][n]['polarizability']['polarizability'])
-        psi4.print_out('{:<58}'.format('            {} Correction:'.format(print_body(n))))
+        psi4.print_stdout('{:<58}'.format('            {} Correction:'.format(print_body(n))))
         while corr:
-            psi4.print_out('    {:> 12.6f}'.format(corr.pop(0)))
-        psi4.print_out('\n')
-        psi4.print_out('{:<58}'.format('            {} Approximation:'.format(print_body(n))))
+            psi4.print_stdout('    {:> 12.6f}'.format(corr.pop(0)))
+        psi4.print_stdout('\n')
+        psi4.print_stdout('{:<58}'.format('            {} Approximation:'.format(print_body(n))))
         while approx:
-            psi4.print_out('    {:> 12.6f}'.format(approx.pop(0)))
-        psi4.print_out('\n\n')
+            psi4.print_stdout('    {:> 12.6f}'.format(approx.pop(0)))
+        psi4.print_stdout('\n\n')
 
 def print_polarizability_tensor_results(db, method, n):
     if db[method][n]['polarizability_tensor']['polarizability_tensor']:
         corr = copy.deepcopy(db[method][n]['polarizability_tensor']['correction'])
         approx = copy.deepcopy(db[method][n]['polarizability_tensor']['polarizability_tensor'])
         if psi4.get_global_option('PRINT') > 1:
-            psi4.print_out('        {} Correction:   \n'.format(print_body(n)))
+            psi4.print_stdout('        {} Correction:   \n'.format(print_body(n)))
             while corr:
-                psi4.print_out('       {: 10.6f}'.format(corr.pop(0)))
-                psi4.print_out('    {: 10.6f}'.format(corr.pop(0)))
-                psi4.print_out('    {: 10.6f}\n'.format(corr.pop(0)))
-                psi4.print_out('       {: 10.6f}'.format(corr.pop(0)))
-                psi4.print_out('    {: 10.6f}'.format(corr.pop(0)))
-                psi4.print_out('    {: 10.6f}\n'.format(corr.pop(0)))
-                psi4.print_out('       {: 10.6f}'.format(corr.pop(0)))
-                psi4.print_out('    {: 10.6f}'.format(corr.pop(0)))
-                psi4.print_out('    {: 10.6f}\n\n'.format(corr.pop(0)))
+                psi4.print_stdout('       {: 10.6f}'.format(corr.pop(0)))
+                psi4.print_stdout('    {: 10.6f}'.format(corr.pop(0)))
+                psi4.print_stdout('    {: 10.6f}\n'.format(corr.pop(0)))
+                psi4.print_stdout('       {: 10.6f}'.format(corr.pop(0)))
+                psi4.print_stdout('    {: 10.6f}'.format(corr.pop(0)))
+                psi4.print_stdout('    {: 10.6f}\n'.format(corr.pop(0)))
+                psi4.print_stdout('       {: 10.6f}'.format(corr.pop(0)))
+                psi4.print_stdout('    {: 10.6f}'.format(corr.pop(0)))
+                psi4.print_stdout('    {: 10.6f}\n\n'.format(corr.pop(0)))
 
-            psi4.print_out('        {} Approximation: \n'.format(print_body(n)))
+            psi4.print_stdout('        {} Approximation: \n'.format(print_body(n)))
             while approx:
-                psi4.print_out('       {: 10.6f}'.format(approx.pop(0)))
-                psi4.print_out('    {: 10.6f}'.format(approx.pop(0)))
-                psi4.print_out('    {: 10.6f}\n'.format(approx.pop(0)))
-                psi4.print_out('       {: 10.6f}'.format(approx.pop(0)))
-                psi4.print_out('    {: 10.6f}'.format(approx.pop(0)))
-                psi4.print_out('    {: 10.6f}\n'.format(approx.pop(0)))
-                psi4.print_out('       {: 10.6f}'.format(approx.pop(0)))
-                psi4.print_out('    {: 10.6f}'.format(approx.pop(0)))
-                psi4.print_out('    {: 10.6f}\n\n'.format(approx.pop(0)))
+                psi4.print_stdout('       {: 10.6f}'.format(approx.pop(0)))
+                psi4.print_stdout('    {: 10.6f}'.format(approx.pop(0)))
+                psi4.print_stdout('    {: 10.6f}\n'.format(approx.pop(0)))
+                psi4.print_stdout('       {: 10.6f}'.format(approx.pop(0)))
+                psi4.print_stdout('    {: 10.6f}'.format(approx.pop(0)))
+                psi4.print_stdout('    {: 10.6f}\n'.format(approx.pop(0)))
+                psi4.print_stdout('       {: 10.6f}'.format(approx.pop(0)))
+                psi4.print_stdout('    {: 10.6f}'.format(approx.pop(0)))
+                psi4.print_stdout('    {: 10.6f}\n\n'.format(approx.pop(0)))
 
 def print_rank_two(db, method, n, result):
     print('Rank two quantity: {}'.format(result))
@@ -831,10 +835,10 @@ def mass_adjust_rotations(db, method, n):
     #    units = omega.pop()
     # Print result header
     #if n == 1:
-    #    psi4.print_out('{:<58}'.format('        MASS-ADJUSTED OPTICAL ROTATION:    '))
+    #    psi4.print_stdout('{:<58}'.format('        MASS-ADJUSTED OPTICAL ROTATION:    '))
     #    while omega:
-    #        psi4.print_out('    {:> 11.2f} {}'.format(omega.pop(0),units))
-    #    psi4.print_out('\n\n')
+    #        psi4.print_stdout('    {:> 11.2f} {}'.format(omega.pop(0),units))
+    #    psi4.print_stdout('\n\n')
 
     # Compute conversion factors
     psi_pi = 3.14159265358979323846264338327950288
@@ -923,17 +927,17 @@ def mass_adjust_rotations(db, method, n):
 
         # Compute individual pair contributions
         # Future if block that turns on/off pair-analysis printing
-        ##psi4.print_out('\n            {:->118}\n'.format(''))
-        ##psi4.print_out('{:<58}\n'.format('            Cluster Contributions: (Distance)'))
+        ##psi4.print_stdout('\n            {:->118}\n'.format(''))
+        ##psi4.print_stdout('{:<58}\n'.format('            Cluster Contributions: (Distance)'))
         indexes = molutil.extract_cluster_indexing(mol, n)
         for index in indexes:
             imass_adjusted_rotations = []
             index_dir = proc.cluster_dir(index)
             #distance = cluster_distance(n,index)
             #try:
-            #    psi4.print_out('{:<58}'.format('              {}                 ({: 6.2f})'.format(index_dir,distance)))
+            #    psi4.print_stdout('{:<58}'.format('              {}                 ({: 6.2f})'.format(index_dir,distance)))
             #except:
-            #    psi4.print_out('{:<58}'.format('              {}                           '.format(index_dir)))
+            #    psi4.print_stdout('{:<58}'.format('              {}                           '.format(index_dir)))
             individual = copy.deepcopy(db[method][n]['rotation_tensor']['cooked_data'][index_dir])
             omega_copy = copy.deepcopy(omega)
             while individual:
@@ -964,29 +968,29 @@ def print_rotation_tensor_results(db, method, n):
         corr = copy.deepcopy(db[method][n]['rotation_tensor']['correction'])
         approx = copy.deepcopy(db[method][n]['rotation_tensor']['rotation_tensor'])
         if psi4.get_global_option('PRINT') > 1:
-            psi4.print_out('        {} Correction:   \n'.format(print_body(n)))
+            psi4.print_stdout('        {} Correction:   \n'.format(print_body(n)))
             while corr:
-                psi4.print_out('       {: 10.6f}'.format(corr.pop(0)))
-                psi4.print_out('    {: 10.6f}'.format(corr.pop(0)))
-                psi4.print_out('    {: 10.6f}\n'.format(corr.pop(0)))
-                psi4.print_out('       {: 10.6f}'.format(corr.pop(0)))
-                psi4.print_out('    {: 10.6f}'.format(corr.pop(0)))
-                psi4.print_out('    {: 10.6f}\n'.format(corr.pop(0)))
-                psi4.print_out('       {: 10.6f}'.format(corr.pop(0)))
-                psi4.print_out('    {: 10.6f}'.format(corr.pop(0)))
-                psi4.print_out('    {: 10.6f}\n\n'.format(corr.pop(0)))
+                psi4.print_stdout('       {: 10.6f}'.format(corr.pop(0)))
+                psi4.print_stdout('    {: 10.6f}'.format(corr.pop(0)))
+                psi4.print_stdout('    {: 10.6f}\n'.format(corr.pop(0)))
+                psi4.print_stdout('       {: 10.6f}'.format(corr.pop(0)))
+                psi4.print_stdout('    {: 10.6f}'.format(corr.pop(0)))
+                psi4.print_stdout('    {: 10.6f}\n'.format(corr.pop(0)))
+                psi4.print_stdout('       {: 10.6f}'.format(corr.pop(0)))
+                psi4.print_stdout('    {: 10.6f}'.format(corr.pop(0)))
+                psi4.print_stdout('    {: 10.6f}\n\n'.format(corr.pop(0)))
 
-            psi4.print_out('        {} Approximation: \n'.format(print_body(n)))
+            psi4.print_stdout('        {} Approximation: \n'.format(print_body(n)))
             while approx:
-                psi4.print_out('       {: 10.6f}'.format(approx.pop(0)))
-                psi4.print_out('    {: 10.6f}'.format(approx.pop(0)))
-                psi4.print_out('    {: 10.6f}\n'.format(approx.pop(0)))
-                psi4.print_out('       {: 10.6f}'.format(approx.pop(0)))
-                psi4.print_out('    {: 10.6f}'.format(approx.pop(0)))
-                psi4.print_out('    {: 10.6f}\n'.format(approx.pop(0)))
-                psi4.print_out('       {: 10.6f}'.format(approx.pop(0)))
-                psi4.print_out('    {: 10.6f}'.format(approx.pop(0)))
-                psi4.print_out('    {: 10.6f}\n\n'.format(approx.pop(0)))
+                psi4.print_stdout('       {: 10.6f}'.format(approx.pop(0)))
+                psi4.print_stdout('    {: 10.6f}'.format(approx.pop(0)))
+                psi4.print_stdout('    {: 10.6f}\n'.format(approx.pop(0)))
+                psi4.print_stdout('       {: 10.6f}'.format(approx.pop(0)))
+                psi4.print_stdout('    {: 10.6f}'.format(approx.pop(0)))
+                psi4.print_stdout('    {: 10.6f}\n'.format(approx.pop(0)))
+                psi4.print_stdout('       {: 10.6f}'.format(approx.pop(0)))
+                psi4.print_stdout('    {: 10.6f}'.format(approx.pop(0)))
+                psi4.print_stdout('    {: 10.6f}\n\n'.format(approx.pop(0)))
 
 def print_body(n):
     num_2_word = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven',
@@ -997,6 +1001,8 @@ def print_body(n):
     
 
 ##### NOTE: BROKEN #####
+##### AJ SAYS IT NO LONGER EXISTS #####
+##### TALK TO HIM #####
 # Build list of dft functional names
 #dft_methods = []
 #for ssuper in functional.superfunctional_list():
@@ -1027,39 +1033,39 @@ def process_options(name, db, options):
             # List consisting of an int - assume int case
             raise Exception('List is not a currently implemented form of n_body '
                             'input. Try a dict.')
-        elif isinstance(options, dict):
-            print("Passed into dict case")
+        else:
             func = db['n_body_func']
             for key in options.keys():
-                print("Made it into for loop")
                 # wfn method?
-#                if key in driver.procedures['{}'.format(func.__name__)].keys():
-                print("hello before func")
-                print(db['n_body_func'])
-                print(func.__name__)
-                print("hello after func")
-                if key in psi4.driver.procrouting.proc_table['{}'.format(func.__name__)].keys():
-                    print("Made it into wfn methods")
+                if key in psi4.driver.procedures['{}'.format(func.__name__)].keys():
                     processed_options['methods'].update({key:options[key]})
                 # dft method?
-                elif key in dft_methods:
-                    processed_options['methods'].update({key:options[key]})
-                # distributed?
-                elif key == 'distributed':
-                    processed_options['distributed'] = options[key]
-                elif key == 'cutoff':
-                    processed_options['cutoff'] = options[key]
-                elif key == 'num_threads':
-                    processed_options['num_threads'] = options[key]
-                elif key == 'bsse':
-                    processed_options['bsse'] = options[key]
-                elif key == 'pcm':
-                    processed_options['pcm'] = options[key]
+#                elif key in dft_methods:
+#                    print("dft_methods")
+#                    processed_options['methods'].update({key:options[key]})
+#                # distributed?
+#                elif key == 'distributed':
+#                    print("distributed")
+#                    processed_options['distributed'] = options[key]
+#                elif key == 'cutoff':
+#                    print("cutoff")
+#                    processed_options['cutoff'] = options[key]
+#                elif key == 'num_threads':
+#                    print("num_threads")
+#                    processed_options['num_threads'] = options[key]
+#                elif key == 'bsse':
+#                    print("bsse")
+#                    processed_options['bsse'] = options[key]
+#                elif key == 'pcm':
+#                    print("pcm")
+#                    processed_options['pcm'] = options[key]
                 else:
                     raise Exception('Unrecognized n_body option {}.'.format(key))
                 # remove the entry from options
-                del options[key]
-    except:
+#                del options[key]
+#                print("key deleted")
+    except Exception as E:
+#        print("Caught Exception E: {},{}".format(type(E)," ".join(E.args)))
         raise Exception('Unrecognized value for n_body input parameter. It may be '
                         ' a bool, int, list, or dict.')
             
@@ -1802,117 +1808,125 @@ def plant(cluster, db, kwargs, method, directory):
     # Write psi4 input files
     # What type of function are we running?
     func = db['n_body_func']
-    if method in dft_methods:
-        # Using g09 for dft properties
-        # Convert from psi4 keywords to g09 equivalent
-        psi4_to_g09 = { 'rotation': 'Polar=OptRot',
-                        'polarizability': 'Polar=Dipole' }
-        # Did the user specify omegas?
-        omega_list = psi4.get_global_option('OMEGA')
-        if len(omega_list) > 1:
-            units = omega_list.pop()
-        else:
-            units = 'AU'
-
-        infile = open('{}/input.com'.format(directory),'w')
-        basis = psi4.get_global_option('BASIS')
-        # Check for n-aug-cc-pVXZ (G09 doesn't have them)
-        # GEN basis is hard wired for n-aug-cc-pVXZ
-        real_basis = ''
-        gen_basis_list = ['D-AUG-CC-PVDZ','T-AUG-CC-PVDZ','Q-AUG-CC-PVDZ',
-                          'D-AUG-CC-PVTZ','T-AUG-CC-PVTZ','Q-AUG-CC-PVTZ',
-                          'D-AUG-CC-PVQZ','T-AUG-CC-PVQZ','Q-AUG-CC-PVQZ']
-        if basis in gen_basis_list:
-            real_basis = copy.deepcopy(basis)
-            basis = 'GEN'
-        # link keeps up with running multiple jobs in single
-        # input.com file
-        link = False
-        # Write the job line command
-        if 'properties' in kwargs:
-            for prop in kwargs['properties']:
-                if link:
-                    infile.write('\n--Link1--\n\n')
-                if db['num_threads']:
-                    infile.write('%NProcShared={}\n'.format(db['num_threads']))
-                infile.write('%Mem={}MB\n'.format(psi4.get_memory()/1000000))
-                infile.write('#p {}/{} NoSymmetry'.format(method,basis))
-                if omega_list:
-                    infile.write(' CPHF(RdFreq)')
-                    # Uncomment following line for tight convergence
-                    #infile.write(' CPHF(Conver=12,RdFreq,Grid=UltraFine)')
-                if db['pcm']:
-                    infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
-                # Uncomment following line for tight convergence
-                #infile.write(' SCF(Conver=12,MaxCycle=512) Integral(UltraFine)')
-                infile.write(' {}\n\n'.format(psi4_to_g09[prop]))
-
-                # Write autogen comment and job name info
-                infile.write('This is a g09 input file auto-generated '
-                         'by psi4 for an n_body {} job.\n'.format(func.__name__))
-                infile.write('{}\n\n'.format(cluster.name()))
-
-                # Write geometry (units = ang)
-                infile.write('{}\n'.format(cluster.save_string_xyz_g09()))
-                # Write user provided wavelengths
-                for wavelength in omega_list:
-                    if units.upper() == 'NM':
-                        infile.write('{}nm '.format(wavelength))
-                    elif units.upper() == 'AU':
-                        infile.write('{}au '.format(wavelength))
-                    else:
-                        # Would be good to auto-convert from hz and ev
-                        # instead, but until then
-                        raise ValidationError('Wavelengths must be in '      
-                                              'NM or AU for use with g09')
-                infile.write('\n')
-                # Check for GEN basis
-                # Works only with n-aug-cc-pVXZ basis
-                if basis == 'GEN':
-                    infile.write('\n@{}/basis_sets/gaussian/{}.gbs'.format(os.getenv('HOME'),real_basis))
-                link = True
-        # Otherwise assume energy calculation
-        else:
-            if db['num_threads']:
-                infile.write('%NProcShared={}\n'.format(db['num_threads']))
-            infile.write('%Mem={}MB\n'.format(psi4.get_memory()/1000000))
-            infile.write('#p {}/{} NoSymmetry'.format(method,basis))
-            if db['pcm']:
-                infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
-            # Uncomment following line for tight convergence
-            #infile.write(' SCF(Conver=12,MaxCycle=512) Integral(UltraFine)')
-
-            # Write autogen comment and job name info
-            infile.write('\n\nThis is a g09 input file auto-generated '
-                     'by psi4 for an n_body {} job.\n'.format(func.__name__))
-            infile.write('{}\n\n'.format(cluster.name()))
-
-            # Write geometry (units = ang)
-            infile.write('{}\n'.format(cluster.save_string_xyz_g09()))
-            # Write user provided wavelengths
-            infile.write('\n')
-            # Check for GEN basis
-            # Hardwired for daDZ for now
-            if basis == 'GEN':
-                infile.write('\n@{}/basis_sets/gaussian/daDZ.gbs'.format(os.getenv('HOME')))
-
-        infile.write('\n')
-        infile.close()
-    # Otherwise assume method is a wfn method. All methods were
-    # checked earlier for validity.
-    else:
-        infile = open('{}/input.dat'.format(directory),'w')
-        infile.write('# This is a psi4 input file auto-generated for an'
-                     ' n_body {} job.\n'.format(func.__name__))
-        infile.write(proc.basic_molecule_for_input(cluster))
-        infile.write('\n\n')
-        infile.write(p4util.format_options_for_input())
-        infile.write("\n{}('{}', ".format(func.__name__, method))
-        for key,val in kwargs.items():
-            #infile.write('{}={}, '.format(key,val))
-            infile.write('{}={} '.format(key,val))
-        infile.write(')\n')
-        infile.close()
+#    if method in dft_methods:
+#        # Using g09 for dft properties
+#        # Convert from psi4 keywords to g09 equivalent
+#        psi4_to_g09 = { 'rotation': 'Polar=OptRot',
+#                        'polarizability': 'Polar=Dipole' }
+#        # Did the user specify omegas?
+#        omega_list = psi4.get_global_option('OMEGA')
+#        if len(omega_list) > 1:
+#            units = omega_list.pop()
+#        else:
+#            units = 'AU'
+#
+#        infile = open('{}/input.com'.format(directory),'w')
+#        basis = psi4.get_global_option('BASIS')
+#        # Check for n-aug-cc-pVXZ (G09 doesn't have them)
+#        # GEN basis is hard wired for n-aug-cc-pVXZ
+#        real_basis = ''
+#        gen_basis_list = ['D-AUG-CC-PVDZ','T-AUG-CC-PVDZ','Q-AUG-CC-PVDZ',
+#                          'D-AUG-CC-PVTZ','T-AUG-CC-PVTZ','Q-AUG-CC-PVTZ',
+#                          'D-AUG-CC-PVQZ','T-AUG-CC-PVQZ','Q-AUG-CC-PVQZ']
+#        if basis in gen_basis_list:
+#            real_basis = copy.deepcopy(basis)
+#            basis = 'GEN'
+#        # link keeps up with running multiple jobs in single
+#        # input.com file
+#        link = False
+#        # Write the job line command
+#        if 'properties' in kwargs:
+#            for prop in kwargs['properties']:
+#                if link:
+#                    infile.write('\n--Link1--\n\n')
+#                if db['num_threads']:
+#                    infile.write('%NProcShared={}\n'.format(db['num_threads']))
+#                infile.write('%Mem={}MB\n'.format(psi4.get_memory()/1000000))
+#                infile.write('#p {}/{} NoSymmetry'.format(method,basis))
+#                if omega_list:
+#                    infile.write(' CPHF(RdFreq)')
+#                    # Uncomment following line for tight convergence
+#                    #infile.write(' CPHF(Conver=12,RdFreq,Grid=UltraFine)')
+#                if db['pcm']:
+#                    infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
+#                # Uncomment following line for tight convergence
+#                #infile.write(' SCF(Conver=12,MaxCycle=512) Integral(UltraFine)')
+#                infile.write(' {}\n\n'.format(psi4_to_g09[prop]))
+#
+#                # Write autogen comment and job name info
+#                infile.write('This is a g09 input file auto-generated '
+#                         'by psi4 for an n_body {} job.\n'.format(func.__name__))
+#                infile.write('{}\n\n'.format(cluster.name()))
+#
+#                # Write geometry (units = ang)
+#                infile.write('{}\n'.format(cluster.save_string_xyz_g09()))
+#                # Write user provided wavelengths
+#                for wavelength in omega_list:
+#                    if units.upper() == 'NM':
+#                        infile.write('{}nm '.format(wavelength))
+#                    elif units.upper() == 'AU':
+#                        infile.write('{}au '.format(wavelength))
+#                    else:
+#                        # Would be good to auto-convert from hz and ev
+#                        # instead, but until then
+#                        raise ValidationError('Wavelengths must be in '      
+#                                              'NM or AU for use with g09')
+#                infile.write('\n')
+#                # Check for GEN basis
+#                # Works only with n-aug-cc-pVXZ basis
+#                if basis == 'GEN':
+#                    infile.write('\n@{}/basis_sets/gaussian/{}.gbs'.format(os.getenv('HOME'),real_basis))
+#                link = True
+#        # Otherwise assume energy calculation
+#        else:
+#            if db['num_threads']:
+#                infile.write('%NProcShared={}\n'.format(db['num_threads']))
+#            infile.write('%Mem={}MB\n'.format(psi4.get_memory()/1000000))
+#            infile.write('#p {}/{} NoSymmetry'.format(method,basis))
+#            if db['pcm']:
+#                infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
+#            # Uncomment following line for tight convergence
+#            #infile.write(' SCF(Conver=12,MaxCycle=512) Integral(UltraFine)')
+#
+#            # Write autogen comment and job name info
+#            infile.write('\n\nThis is a g09 input file auto-generated '
+#                     'by psi4 for an n_body {} job.\n'.format(func.__name__))
+#            infile.write('{}\n\n'.format(cluster.name()))
+#
+#            # Write geometry (units = ang)
+#            infile.write('{}\n'.format(cluster.save_string_xyz_g09()))
+#            # Write user provided wavelengths
+#            infile.write('\n')
+#            # Check for GEN basis
+#            # Hardwired for daDZ for now
+#            if basis == 'GEN':
+#                infile.write('\n@{}/basis_sets/gaussian/daDZ.gbs'.format(os.getenv('HOME')))
+#
+#        infile.write('\n')
+#        infile.close()
+#    # Otherwise assume method is a wfn method. All methods were
+#    # checked earlier for validity.
+#    else:
+##### NOTE: the rest of this function was indented under the "else" #####
+##### statement, but I'm skipping DFT for now. #####
+    infile = open('{}/input.dat'.format(directory),'w')
+    infile.write('# This is a psi4 input file auto-generated for an'
+                 ' n_body {} job.\n'.format(func.__name__))
+##### NOTE: The following commented lines are Taylor's old way of #####
+##### generating inputs. The new code is largely based on the ROA #####
+##### code roa.py #####
+#    infile.write(proc.basic_molecule_for_input(cluster))
+#    infile.write('\n\n')
+    mol_open = 'molecule ' + cluster.name() + ' {\n'
+    mol_close = '}'
+    infile.write("{}{}{}".format(mol_open,cluster.create_psi4_string_from_molecule(),mol_close))
+    infile.write(psi4.p4util.format_options_for_input())
+    infile.write("\n{}('{}', ".format(func.__name__, method))
+    for key,val in kwargs.items():
+        #infile.write('{}={}, '.format(key,val))
+        infile.write('{}={} '.format(key,val))
+    infile.write(')\n')
+    infile.close()
 
 def ghost_dir(indexes, ghost):
     directory = ''
