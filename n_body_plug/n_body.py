@@ -262,7 +262,7 @@ def banner(db):
     !! There are ancilliary python scripts that interact with the n_body
     database file for convenient submission of the generated input files and
     custom result manipulations that you may wish to perform. They are
-    available here: GITHUB REPO.\n"""
+    available here: github.com/bgpeyton/n_body\n"""
     complete_message = """\n
     All requested jobs have completed running. Results and corrections should be
     printed below for all approximation levels requested. If not try running
