@@ -1036,9 +1036,12 @@ def process_options(name, db, options):
         else:
             func = db['n_body_func']
             for key in options.keys():
+#                print('key:')
+#                print(key)
                 # wfn method?
                 if key in psi4.driver.procedures['{}'.format(func.__name__)].keys():
                     processed_options['methods'].update({key:options[key]})
+#                    print('Found wfn method')
                 # dft method?
 #                elif key in dft_methods:
 #                    print("dft_methods")
@@ -1053,9 +1056,11 @@ def process_options(name, db, options):
 #                elif key == 'num_threads':
 #                    print("num_threads")
 #                    processed_options['num_threads'] = options[key]
-#                elif key == 'bsse':
+                elif key == 'bsse':
 #                    print("bsse")
-#                    processed_options['bsse'] = options[key]
+                    processed_options['bsse'] = options[key]
+#                    print('options[key]:')
+#                    print(options[key])
 #                elif key == 'pcm':
 #                    print("pcm")
 #                    processed_options['pcm'] = options[key]
@@ -1065,7 +1070,7 @@ def process_options(name, db, options):
 #                del options[key]
 #                print("key deleted")
     except Exception as E:
-#        print("Caught Exception E: {},{}".format(type(E)," ".join(E.args)))
+        print("Caught Exception E: {},{}".format(type(E)," ".join(E.args)))
         raise Exception('Unrecognized value for n_body input parameter. It may be '
                         ' a bool, int, list, or dict.')
             

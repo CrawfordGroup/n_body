@@ -36,8 +36,14 @@ set n_body {
 #my_nbody_plug.nbody(name, nbody_args= {}, properties = [])
 
 # current running example of properties calculation
-n_body_plug.run_n_body('cc2', n_body={'cc2': 1}, properties=['polarizability'])
+#n_body_plug.run_n_body('cc2', n_body={'cc2': 1}, properties=['polarizability'])
 
 # current running example of energy calculation
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 1})
+#n_body_plug.run_n_body('cc2', n_body={'cc2': 2})
 
+# test example for vmfc bsse calculations
+n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'vmfc'})
+
+# test example for mbcp bsse calculations
+#n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'mbcp'})
