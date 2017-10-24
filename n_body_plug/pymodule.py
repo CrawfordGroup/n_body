@@ -214,6 +214,7 @@ def run_n_body(name, **kwargs):
 
                 # Create input files
                 db[method][n]['total_num_jobs'] = len(clusters)
+                print('n = {}'.format(n))
                 print('Number of jobs created = {}'.format(len(clusters)))
                 for k in range(len(clusters)):
                     psi4.activate(clusters[k])

@@ -16,6 +16,7 @@
 #        'n_body_max': int #User set upper bound for n_body jobs
 #        'results': list, #desired computed quantities
 #        n_body_level = { #One of each n <= n_body_max (an int, i.e. 1)
+                          #Also ghost jobs (a str, i.e. '2-1r' [2 body, 1 real])
 #            'num_jobs_complete': int, #
 #            'total_num_jobs'   : int, #total number of jobs for n
 #            result = {} #dict containing information for each quantity of interest
