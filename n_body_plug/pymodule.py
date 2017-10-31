@@ -258,8 +258,11 @@ def run_n_body(name, **kwargs):
                             n_real = n - len(ghost)
                             ghost_jobs = '{}-{}r'.format(n_basis,n_real)
                             #db[method][ghost_jobs]['total_num_jobs'] = len(vmfc) * len(clusters)
-                            db[method][ghost_jobs]['total_num_jobs'] = len(list(itertools.combinations(range(0,n),n_real))) * len(clusters)
-                            db[method][ghost_jobs]['job_status'].update({n_body.ghost_dir(indexes[k],ghost):
+#                            db[method][ghost_jobs]['total_num_jobs'] = len(list(itertools.combinations(range(0,n),n_real))) * len(clusters)
+#                            db[method][ghost_jobs]['job_status'].update({n_body.ghost_dir(indexes[k],ghost):
+#                                                                        'not_started'})
+                            db[method][n]['total_num_jobs'] = len(list(itertools.combinations(range(0,n),n_real))) * len(clusters)
+                            db[method][n]['job_status'].update({n_body.ghost_dir(indexes[k],ghost):
                                                                         'not_started'})
                             # Reactivate fragments for next round
                             cluster.set_active_fragments(list(ghost))

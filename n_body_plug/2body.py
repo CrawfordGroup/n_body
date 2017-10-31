@@ -17,7 +17,7 @@ body_list = []
 method_list = []
 
 # one-body
-#body_list += [1]
+body_list += [1]
 # two-body
 body_list += [2]
 # three-body
@@ -66,11 +66,19 @@ for method in method_list:
     for n in body_list:
         db = shelve.open('database')
         job_list = db[method][n]['job_status']
+#       Example: db['cc2'][2]['job_status'] = OrderedDict([('1','not_started'),('2','not_started')])
         body = n_body_dir(n)
+#       Example: n_body_dir(2) = 'two_body'
         while job_list:
             job,val = job_list.popitem(last=True)
-            print(job)
-            os.chdir('{}/{}/{}'.format(method,body,job))
-            subprocess.call(['psi4', 'input.dat', 'output.dat'])
-            os.chdir('../../..')
+#           Example: job = 2 and val = not_started
+#           Actually pops the entry out of the job_list so that while job_list actually ends
+            if val == 'not_started': # For now, only start not_started jobs. Start dead jobs later
+                print(job)
+                print('{}/{}/{}'.format(method,body,job))
+#                os.chdir('{}/{}/{}'.format(method,body,job))
+#               Example: os.chdir('{}/{}/{}'.format('cc2','two_body',2)
+#                subprocess.call(['psi4', 'input.dat', 'output.dat'])
+#                os.chdir('../../..')
+        db.close()
 
