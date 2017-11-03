@@ -76,9 +76,9 @@ for method in method_list:
             if val == 'not_started': # For now, only start not_started jobs. Start dead jobs later
                 print(job)
                 print('{}/{}/{}'.format(method,body,job))
-#                os.chdir('{}/{}/{}'.format(method,body,job))
+                os.chdir('{}/{}/{}'.format(method,body,job))
 #               Example: os.chdir('{}/{}/{}'.format('cc2','two_body',2)
-#                subprocess.call(['psi4', 'input.dat', 'output.dat'])
-#                os.chdir('../../..')
+                subprocess.call(['psi4', 'input.dat', 'output.dat'])
+                os.chdir('../../..')
         db.close()
 

@@ -13,6 +13,10 @@ H       11.78  15.49  13.29
 O       18.58  15.28  15.69
 H       18.51  14.46  15.22
 H       19.39  15.2  16.2
+--
+O	17.48  16.47  17.83
+H	17.7  15.93  17.07
+H	17.11  15.85  18.46
 units angstrom
 no_reorient
 no_com
@@ -40,10 +44,10 @@ set n_body {
 
 # current running example of energy calculation
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 1})
-#n_body_plug.run_n_body('cc2', n_body={'cc2': 2})
+n_body_plug.run_n_body('cc2', n_body={'cc2': 3})
 
 # test example for vmfc bsse calculations
-n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'vmfc'})
+#n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'vmfc'})
 
 # test example for mbcp bsse calculations
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'mbcp'})

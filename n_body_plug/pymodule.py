@@ -151,6 +151,7 @@ def run_n_body(name, **kwargs):
                 #clusters = extract_clusters(molecule, True, n)
                 # Get all possible clusters without ghost atoms
                 clusters = psi4.extract_clusters(molecule, False, n)
+                # Set above to TRUE to always get SSFC!
                 #if db['bsse'] == 'radius'
                 #clusters = extract_clusters(molecule, False, n)
                 #clusters = n_body.expand_basis(clusters, db['basis_cutoff'])
@@ -235,8 +236,11 @@ def run_n_body(name, **kwargs):
                             n_basis = n
                             n_real = n - len(ghost)
                             ghost_jobs = '{}-{}r'.format(n_basis,n_real)
-                            db[method][ghost_jobs]['total_num_jobs'] = len(mbcp) * len(clusters)
-                            db[method][ghost_jobs]['job_status'].update({n_body.ghost_dir(indexes[k],ghost):
+#                            db[method][ghost_jobs]['total_num_jobs'] = len(mbcp) * len(clusters)
+#                            db[method][ghost_jobs]['job_status'].update({n_body.ghost_dir(indexes[k],ghost):
+#                                                                        'not_started'})
+                            db[method][n]['total_num_jobs'] = len(mbcp) * len(clusters)
+                            db[method][n]['job_status'].update({n_body.ghost_dir(indexes[k],ghost):
                                                                         'not_started'})
                             # Reactivate fragments for next round
                             cluster.set_active_fragments(list(ghost))
@@ -302,7 +306,7 @@ def run_n_body(name, **kwargs):
 #                complete_message = 'Normal termination of Gaussian'
 #            else:
             outname = 'output.dat'
-            complete_message = 'PSI4 exiting successfully'
+            complete_message = 'Psi4 exiting successfully'
             # Check all n_body_levels
             for field in db[method]['farm']:
                 print(field)
@@ -385,12 +389,7 @@ def run_n_body(name, **kwargs):
 
 
 
-
 # Integration with driver routines
 #psi4.driver.procedures['energy']['n_body'] = run_n_body_energy
 #psi4.driver.procedures['properties']['n_body'] = run_n_body_properties
 
-
-def exampleFN():
-    # Your Python code goes here
-    pass
