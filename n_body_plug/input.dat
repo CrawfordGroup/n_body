@@ -46,16 +46,18 @@ set n_body {
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 1})
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 3})
 
-# test example for vmfc bsse calculations
+# current running example for vmfc bsse calculations
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'vmfc'})
 
-# test example for mbcp bsse calculations
+# current running example for mbcp bsse calculations
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'mbcp'})
 
-# test example for ssfc bsse calculations
+# current running example for ssfc bsse calculations
 n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'ssfc'})
 
 
+# generated input files should also have the following
+# (automatically added as of commit #2538754)
 #with open('data.json', 'w') as dumpf:
 #   json.dump(core.get_variables(), dumpf, indent=4) 
 #
