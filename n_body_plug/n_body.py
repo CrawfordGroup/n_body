@@ -47,7 +47,7 @@ import collections
 import psi4
 #import molutil
 #import proc
-#import sys
+import sys
 import copy
 #import functional
 #import driver
@@ -58,6 +58,8 @@ import copy
 import os
 #import p4util
 #import re
+# need json for new output structure
+import json
 
 def clean_up(db):
     try:
@@ -1111,12 +1113,16 @@ def harvest_g09(db,method,n):
 def harvest_scf_energy_data(db,method,n):
     body = n_body_dir(n)
     for job in db[method][n]['job_status']:
-        with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
-            for line in outfile:
-                if '@RHF Final Energy:' in line:
-                    (i,j,k, energy) = line.split()
-                    db[method][n]['scf_energy']['raw_data'].update({job: 
-                                                                [float(energy)]})
+#        with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
+#            for line in outfile:
+#                if '@RHF Final Energy:' in line:
+#                    (i,j,k, energy) = line.split()
+#                    db[method][n]['scf_energy']['raw_data'].update({job: 
+#                                                                [float(energy)]})
+        with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
+            jout = json.load(outfile)
+            energy = jout["SCF TOTAL ENERGY"]
+            db[method][n]['scf_energy']['raw_data'].update({job:energy})
 
 def harvest_cc_energy(db,method,n):
     body = n_body_dir(n)
