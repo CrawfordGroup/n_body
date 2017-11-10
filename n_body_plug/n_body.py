@@ -1153,19 +1153,25 @@ def harvest_scf_dipole_data(db,method,n):
     # the first time.
     body = n_body_dir(n)
     for job in db[method][n]['job_status']:
-        get_next = False
-        data_collected = False
-        with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
-            for line in outfile:
-                if get_next and not data_collected:
-                    # total dipole moment is discarded as n-body using magnitudes is meaningless
-                    (x,x_val,y,y_val,z,z_val,total,total_val) = line.split()
-                    db[method][n]['scf_dipole']['raw_data'].update({job: 
-                                    [float(x_val),float(y_val),float(z_val)]})
-                    get_next = False
-                    data_collected = True
-                if '  Dipole Moment: (Debye)' in line:
-                    get_next = True
+#        get_next = False
+#        data_collected = False
+#        with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
+#            for line in outfile:
+#                if get_next and not data_collected:
+#                    # total dipole moment is discarded as n-body using magnitudes is meaningless
+#                    (x,x_val,y,y_val,z,z_val,total,total_val) = line.split()
+#                    db[method][n]['scf_dipole']['raw_data'].update({job: 
+#                                    [float(x_val),float(y_val),float(z_val)]})
+#                    get_next = False
+#                    data_collected = True
+#                if '  Dipole Moment: (Debye)' in line:
+#                    get_next = True
+        with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
+            jout = json.load(outfile)
+            x = jout["SCF DIPOLE X"]
+            y = jout["SCF DIPOLE Y"]
+            z = jout["SCF DIPOLE Z"]
+            db[method][n]['scf_dipole']['raw_data'].update({job:[x,y,z]})
 
 def harvest_g09_scf_dipole(db,method,n):
     body = n_body_dir(n)
