@@ -1125,6 +1125,7 @@ def harvest_scf_energy_data(db,method,n):
             db[method][n]['scf_energy']['raw_data'].update({job:energy})
 
 def harvest_cc_energy(db,method,n):
+#####NOTE: is this function even useful??? find where this is used!!#####
     body = n_body_dir(n)
     name = psi4.get_global_option('WFN')
     for job in db[method][n]['job_status']:
@@ -1473,18 +1474,26 @@ def harvest_g09_polarizability_tensor(db, method, n):
 
 def harvest_cc_energy_data(db, method, n):
     body = n_body_dir(n)
-    cc_methods = ['cc2', 'ccsd', 'cc3', 'eom-cc2', 'eom-ccsd']
-    if method in cc_methods:
-        for job in db[method][n]['job_status']:
-            with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
-                for line in outfile:
-                    if '{} correlation energy'.format(method.upper()) in line:
-                        try:
-                            (i,j,k,l, energy) = line.split()
-                            db[method][n]['cc_energy']['raw_data'].update({job:
-                                                                 [float(energy)]})
-                        except:
-                            pass
+    name = method.upper()
+    print("Getting cc_energy from method:")
+    print(name)
+#    cc_methods = ['cc2', 'ccsd', 'cc3', 'eom-cc2', 'eom-ccsd']
+#    if method in cc_methods:
+    for job in db[method][n]['job_status']:
+#            with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
+#                for line in outfile:
+#                    if '{} correlation energy'.format(method.upper()) in line:
+#                        try:
+#                            (i,j,k,l, energy) = line.split()
+#                            db[method][n]['cc_energy']['raw_data'].update({job:
+#                                                                 [float(energy)]})
+#                        except:
+#                            pass
+        with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
+            jout = json.load(outfile)
+            energy = jout["{} TOTAL ENERGY".format(name)]
+            db[method][n]['cc_energy']['raw_data'].update({job:energy})
+            print(db[method][n]['cc_energy']['raw_data'][job])
 
 def cook_data(db, method, n):
     # Automatic cooking requires all result data be stored as lists in the
