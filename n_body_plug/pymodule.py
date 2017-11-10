@@ -147,14 +147,19 @@ def run_n_body(name, **kwargs):
                         raise Exception('Attempt to create {} directory '
                                         'failed.'.format(directory))
                 # Create job input files
-                #if db['bsse'] == 'cluster_basis'
-                #clusters = extract_clusters(molecule, True, n)
-                # Get all possible clusters without ghost atoms
-                clusters = psi4.extract_clusters(molecule, False, n)
-                # Set above to TRUE to always get SSFC!
+                
+                # Grab all ghost functions if SSFC 
+                # Else, get all possible clusters without ghost atoms
+                if db['bsse'] == 'ssfc':
+                    clusters = psi4.extract_clusters(molecule, True, n)
+                else:
+                    clusters = psi4.extract_clusters(molecule, False, n)
+
+                # Flip distance-dropoff off for now
                 #if db['bsse'] == 'radius'
                 #clusters = extract_clusters(molecule, False, n)
                 #clusters = n_body.expand_basis(clusters, db['basis_cutoff'])
+
                 # Get list of fragments involved in clusters
                 indexes = psi4.extract_cluster_indexing(molecule, n)
                 print('Length of index array = {}'.format(len(indexes)))

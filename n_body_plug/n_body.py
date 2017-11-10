@@ -1932,6 +1932,8 @@ def plant(cluster, db, kwargs, method, directory):
         #infile.write('{}={}, '.format(key,val))
         infile.write('{}={} '.format(key,val))
     infile.write(')\n')
+    infile.write("""\n\nimport json\nwith open('output.json', 'w') as dumpf:\n""")
+    infile.write("""    json.dump(core.get_variables(), dumpf, indent=4)""")
     infile.close()
 
 def ghost_dir(indexes, ghost):
