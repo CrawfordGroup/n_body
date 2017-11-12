@@ -120,17 +120,9 @@ def initialize_database(database, kwargs):
     database['num_threads']      = False
     database['bsse']             = ''
     database['pcm']              = False
-#    database['n_body_func']      = kwargs.pop('n_body_func')
-#    print(kwargs.get('properties',[])
-#    prop_arg = kwargs.get('properties', [])
-#    if prop_arg == []:
     if 'properties' in kwargs:
-#        print("Looks like kwargs seems to have properties...")
         database['n_body_func'] = psi4.properties
-#        now this could be called like:
-#        database['n_body_func']()
     else:
-#        print("Looks like kwargs seems to have energy...")
         database['n_body_func'] = psi4.energy
     database['methods']          = {}
 
@@ -155,6 +147,8 @@ def extend_database(database, kwargs):
             if 'rotation' in kwargs['properties']:
                 database[method]['results'].append('rotation')
                 database[method]['results'].append('rotation_tensor')
+            if 'quadrupole' in kwargs['properties']:
+                database[method]['results'].append('quadrupole')
             # Need roa also!
         # Build list of job categories for iterating
         farm = []
@@ -1039,12 +1033,9 @@ def process_options(name, db, options):
         else:
             func = db['n_body_func']
             for key in options.keys():
-#                print('key:')
-#                print(key)
                 # wfn method?
                 if key in psi4.driver.procedures['{}'.format(func.__name__)].keys():
                     processed_options['methods'].update({key:options[key]})
-#                    print('Found wfn method')
                 # dft method?
 #                elif key in dft_methods:
 #                    print("dft_methods")
@@ -1104,6 +1095,7 @@ def n_body_dir(n):
 
 def harvest_data(db,method,n):
     for result in db[method]['results']:
+        print(getattr(sys.modules[__name__],'harvest_{}_data'.format(result)))
         getattr(sys.modules[__name__],'harvest_{}_data'.format(result))(db,method,n)
 
 def harvest_g09(db,method,n):
@@ -1113,60 +1105,14 @@ def harvest_g09(db,method,n):
 def harvest_scf_energy_data(db,method,n):
     body = n_body_dir(n)
     for job in db[method][n]['job_status']:
-#        with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
-#            for line in outfile:
-#                if '@RHF Final Energy:' in line:
-#                    (i,j,k, energy) = line.split()
-#                    db[method][n]['scf_energy']['raw_data'].update({job: 
-#                                                                [float(energy)]})
         with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
             jout = json.load(outfile)
             energy = jout["SCF TOTAL ENERGY"]
             db[method][n]['scf_energy']['raw_data'].update({job:energy})
 
-def harvest_cc_energy(db,method,n):
-#####NOTE: is this function even useful??? find where this is used!!#####
-    body = n_body_dir(n)
-    name = psi4.get_global_option('WFN')
-    for job in db[method][n]['job_status']:
-        with open('{}/{}/{}/output.dat'.format(method,body,job)) as outfile:
-            for line in outfile:
-                if '{} correlation energy'.format(name.upper()) in line:
-                    try:
-                        (i,j,k,l, cc_energy) = line.split()
-                        db[method][n]['cc_energy']['raw_data'].update({job: [float(cc_energy)]})
-                    except:
-                        pass
-
-def harvest_g09_scf_energy(db,method,n):
-    body = n_body_dir(n)
-    for job in db[method][n]['job_status']:
-        with open('{}/{}/{}/input.log'.format(method,body,job)) as outfile:
-            for line in outfile:
-                if 'SCF Done:' in line:
-                    (i,i,i,i, energy, i,i,i,i) = line.split()
-                    db[method][n]['scf_energy']['raw_data'].update({job:
-                                                                    [float(energy)]})
-
 def harvest_scf_dipole_data(db,method,n):
-    # The printing of dipole moments in psi4 always claims that it is the SCF
-    # dipole. Until a better fix I hacked this to stop after finding the dipole
-    # the first time.
     body = n_body_dir(n)
     for job in db[method][n]['job_status']:
-#        get_next = False
-#        data_collected = False
-#        with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
-#            for line in outfile:
-#                if get_next and not data_collected:
-#                    # total dipole moment is discarded as n-body using magnitudes is meaningless
-#                    (x,x_val,y,y_val,z,z_val,total,total_val) = line.split()
-#                    db[method][n]['scf_dipole']['raw_data'].update({job: 
-#                                    [float(x_val),float(y_val),float(z_val)]})
-#                    get_next = False
-#                    data_collected = True
-#                if '  Dipole Moment: (Debye)' in line:
-#                    get_next = True
         with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
             jout = json.load(outfile)
             x = jout["SCF DIPOLE X"]
@@ -1174,59 +1120,19 @@ def harvest_scf_dipole_data(db,method,n):
             z = jout["SCF DIPOLE Z"]
             db[method][n]['scf_dipole']['raw_data'].update({job:[x,y,z]})
 
-def harvest_g09_scf_dipole(db,method,n):
-    body = n_body_dir(n)
-    for job in db[method][n]['job_status']:
-        get_next = False
-        with open('{}/{}/{}/input.log'.format(method,body,job)) as outfile:
-            for line in outfile:
-                if get_next:
-                    # total dipole moment is discarded as n-body using magnitudes is meaningless
-                    (x,x_val,y,y_val,z,z_val,tot,tot_val) = line.split()
-                    db[method][n]['scf_dipole']['raw_data'].update({job:
-                                    [float(x_val),float(y_val),float(z_val)]})
-                    get_next = False
-                if 'Dipole moment' in line:
-                    get_next = True
-
-
 def harvest_quadrupole_data(db,method,n):
+    print("Grabbing quadrupole data.")
     body = n_body_dir(n)
     for job in db[method][n]['job_status']:
-        get_next = 0
-        with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
-            for line in outfile:
-                if get_next == 1:
-                    (xx, xx_val, yy, yy_val, zz, zz_val) = line.split()
-                    get_next = 2
-                    continue
-                if get_next == 2:
-                    (xy, xy_val, xz, xz_val, yz_val, yz_val) = line.split()
-                    db[method][n]['quadrupole']['raw_data'].update({job: 
-                                [float(xx_val), float(yy_val), float(zz_val),
-                                 float(xy_val), float(xz_val), float(yz_val)]})
-                    get_next = 0
-                if '  Traceless Quadrupole Moment: (Debye Ang)' in line:
-                    get_next = 1
-
-def harvest_g09_quadrupole(db,method,n):
-    body = n_body_dir(n)
-    for job in db[method][n]['job_status']:
-        get_next = 0
-        with open('{}/{}/{}/input.log'.format(method,body,job),'r') as outfile:
-            for line in outfile:
-                if get_next == 1:
-                    (xx, xx_val, yy, yy_val, zz, zz_val) = line.split()
-                    get_next = 2
-                    continue
-                if get_next == 2:
-                    (xy, xy_val, xz, xz_val, yz_val, yz_val) = line.split()
-                    db[method][n]['quadrupole']['raw_data'].update({job: 
-                                [float(xx_val), float(yy_val), float(zz_val),
-                                 float(xy_val), float(xz_val), float(yz_val)]})
-                    get_next = 0
-                if 'Traceless Quadrupole moment' in line:
-                    get_next = 1
+        with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
+            jout = json.load(outfile)
+            xx = jout["CC QUADRUPOLE XX"]
+            xy = jout["CC QUADRUPOLE XY"]
+            xz = jout["CC QUADRUPOLE XZ"]
+            yy = jout["CC QUADRUPOLE YY"]
+            yz = jout["CC QUADRUPOLE YZ"]
+            zz = jout["CC QUADRUPOLE ZZ"]
+            db[method][n]['quadrupole']['raw_data'].update({job:[xx,xy,xz,yy,yz,zz]})
 
 def harvest_rotation_data(db,method,n):
     body = n_body_dir(n)
@@ -1275,6 +1181,118 @@ def harvest_rotation_data(db,method,n):
                     get_next = False
         # Add list of rotations onto database entry
         db[method][n]['rotation']['raw_data'].update({job: optrot})
+
+def harvest_rotation_tensor_data(db, method, n):
+    body = n_body_dir(n)
+    # Creates one massive list of all the elements from each tensor
+    for job in db[method][n]['job_status']:
+        tensors = []
+        with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
+            while True:
+                # Get ONLY MVG data
+                tensor = grab_psi4_matrix(outfile, 'Optical Rotation '
+                                                'Tensor (Modified', 3)
+                if not tensor:
+                    break
+                else:
+                    tensors.extend(tensor)
+        db[method][n]['rotation_tensor']['raw_data'].update({job: tensors})
+
+def harvest_polarizability_data(db, method, n):
+    body = n_body_dir(n)
+    for job in db[method][n]['job_status']:
+        pols = []
+        with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
+            for line in outfile:
+                # Assume polarizabilities are presented in order of wavelengths
+                # as specified by the user in the input file.
+                if 'alpha_(' in line:
+                    (i,j, value, l) = line.split()
+                    pols.append(float(value))
+        db[method][n]['polarizability']['raw_data'].update({job: pols})
+
+def harvest_polarizability_tensor_data(db, method, n):
+    body = n_body_dir(n)
+    # Creates one massive list of all the elements from each tensor
+    for job in db[method][n]['job_status']:
+        tensors = []
+        with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
+            while True:
+                tensor = grab_psi4_matrix(outfile, 'Dipole Polarizability', 3)
+                if not tensor:
+                    break
+                else:
+                    tensors.extend(tensor)
+        #Resort the tensors into user specified order 
+        db[method][n]['polarizability_tensor']['raw_data'].update({job: tensors})
+
+def harvest_cc_energy_data(db, method, n):
+    body = n_body_dir(n)
+    name = method.upper()
+    for job in db[method][n]['job_status']:
+        with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
+            jout = json.load(outfile)
+            energy = jout["{} TOTAL ENERGY".format(name)]
+            db[method][n]['cc_energy']['raw_data'].update({job:energy})
+
+def harvest_cc_energy(db,method,n):
+#####NOTE: is this function even useful??? find where this is used!!#####
+    body = n_body_dir(n)
+    name = psi4.get_global_option('WFN')
+    for job in db[method][n]['job_status']:
+        with open('{}/{}/{}/output.dat'.format(method,body,job)) as outfile:
+            for line in outfile:
+                if '{} correlation energy'.format(name.upper()) in line:
+                    try:
+                        (i,j,k,l, cc_energy) = line.split()
+                        db[method][n]['cc_energy']['raw_data'].update({job: [float(cc_energy)]})
+                    except:
+                        pass
+
+def harvest_g09_scf_energy(db,method,n):
+    body = n_body_dir(n)
+    for job in db[method][n]['job_status']:
+        with open('{}/{}/{}/input.log'.format(method,body,job)) as outfile:
+            for line in outfile:
+                if 'SCF Done:' in line:
+                    (i,i,i,i, energy, i,i,i,i) = line.split()
+                    db[method][n]['scf_energy']['raw_data'].update({job:
+                                                                    [float(energy)]})
+
+def harvest_g09_scf_dipole(db,method,n):
+    body = n_body_dir(n)
+    for job in db[method][n]['job_status']:
+        get_next = False
+        with open('{}/{}/{}/input.log'.format(method,body,job)) as outfile:
+            for line in outfile:
+                if get_next:
+                    # total dipole moment is discarded as n-body using magnitudes is meaningless
+                    (x,x_val,y,y_val,z,z_val,tot,tot_val) = line.split()
+                    db[method][n]['scf_dipole']['raw_data'].update({job:
+                                    [float(x_val),float(y_val),float(z_val)]})
+                    get_next = False
+                if 'Dipole moment' in line:
+                    get_next = True
+
+
+def harvest_g09_quadrupole(db,method,n):
+    body = n_body_dir(n)
+    for job in db[method][n]['job_status']:
+        get_next = 0
+        with open('{}/{}/{}/input.log'.format(method,body,job),'r') as outfile:
+            for line in outfile:
+                if get_next == 1:
+                    (xx, xx_val, yy, yy_val, zz, zz_val) = line.split()
+                    get_next = 2
+                    continue
+                if get_next == 2:
+                    (xy, xy_val, xz, xz_val, yz_val, yz_val) = line.split()
+                    db[method][n]['quadrupole']['raw_data'].update({job: 
+                                [float(xx_val), float(yy_val), float(zz_val),
+                                 float(xy_val), float(xz_val), float(yz_val)]})
+                    get_next = 0
+                if 'Traceless Quadrupole moment' in line:
+                    get_next = 1
 
 def harvest_g09_rotation(db,method,n):
     body = n_body_dir(n)
@@ -1367,21 +1385,6 @@ def reorder_g09_rotations(optrot,omega=None):
     # Return the list
     return optrot
 
-def harvest_rotation_tensor_data(db, method, n):
-    body = n_body_dir(n)
-    # Creates one massive list of all the elements from each tensor
-    for job in db[method][n]['job_status']:
-        tensors = []
-        with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
-            while True:
-                # Get ONLY MVG data
-                tensor = grab_psi4_matrix(outfile, 'Optical Rotation '
-                                                'Tensor (Modified', 3)
-                if not tensor:
-                    break
-                else:
-                    tensors.extend(tensor)
-        db[method][n]['rotation_tensor']['raw_data'].update({job: tensors})
 
 def harvest_g09_rotation_tensor(db, method, n):
     body = n_body_dir(n)
@@ -1399,19 +1402,6 @@ def harvest_g09_rotation_tensor(db, method, n):
         # Resort the tensors to user specified order
         tensors = reorder_g09_rotations(tensors)
         db[method][n]['rotation_tensor']['raw_data'].update({job: tensors})
-
-def harvest_polarizability_data(db, method, n):
-    body = n_body_dir(n)
-    for job in db[method][n]['job_status']:
-        pols = []
-        with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
-            for line in outfile:
-                # Assume polarizabilities are presented in order of wavelengths
-                # as specified by the user in the input file.
-                if 'alpha_(' in line:
-                    (i,j, value, l) = line.split()
-                    pols.append(float(value))
-        db[method][n]['polarizability']['raw_data'].update({job: pols})
 
 def harvest_g09_polarizability(db, method, n):
     body = n_body_dir(n)
@@ -1442,21 +1432,6 @@ def harvest_g09_polarizability(db, method, n):
 
 
                 
-def harvest_polarizability_tensor_data(db, method, n):
-    body = n_body_dir(n)
-    # Creates one massive list of all the elements from each tensor
-    for job in db[method][n]['job_status']:
-        tensors = []
-        with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
-            while True:
-                tensor = grab_psi4_matrix(outfile, 'Dipole Polarizability', 3)
-                if not tensor:
-                    break
-                else:
-                    tensors.extend(tensor)
-        #Resort the tensors into user specified order 
-        db[method][n]['polarizability_tensor']['raw_data'].update({job: tensors})
-
 def harvest_g09_polarizability_tensor(db, method, n):
     body = n_body_dir(n)
     omega = psi4.get_global_option('OMEGA')
@@ -1471,29 +1446,6 @@ def harvest_g09_polarizability_tensor(db, method, n):
                 tensors.extend(grab_g09_matrix(outfile, 'Alpha(-w,w) frequency  {}'.format(k+1), 3))
         tensors = reorder_g09_rotations(tensors)
         db[method][n]['polarizability_tensor']['raw_data'].update({job: tensors})
-
-def harvest_cc_energy_data(db, method, n):
-    body = n_body_dir(n)
-    name = method.upper()
-    print("Getting cc_energy from method:")
-    print(name)
-#    cc_methods = ['cc2', 'ccsd', 'cc3', 'eom-cc2', 'eom-ccsd']
-#    if method in cc_methods:
-    for job in db[method][n]['job_status']:
-#            with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
-#                for line in outfile:
-#                    if '{} correlation energy'.format(method.upper()) in line:
-#                        try:
-#                            (i,j,k,l, energy) = line.split()
-#                            db[method][n]['cc_energy']['raw_data'].update({job:
-#                                                                 [float(energy)]})
-#                        except:
-#                            pass
-        with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
-            jout = json.load(outfile)
-            energy = jout["{} TOTAL ENERGY".format(name)]
-            db[method][n]['cc_energy']['raw_data'].update({job:energy})
-            print(db[method][n]['cc_energy']['raw_data'][job])
 
 def cook_data(db, method, n):
     # Automatic cooking requires all result data be stored as lists in the

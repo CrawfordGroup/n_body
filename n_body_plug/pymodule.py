@@ -354,7 +354,7 @@ def run_n_body(name, **kwargs):
     if not db['results_computed']:
         for method in db['methods'].keys():
             for field in db[method]['farm']:
-                print(field)
+                print("field: {}".format(field))
                 num_fin = db[method][field]['num_jobs_complete']
                 tot_num = db[method][field]['total_num_jobs']
                 print('{}/{} finished'.format(num_fin,tot_num))
