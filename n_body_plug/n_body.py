@@ -1095,7 +1095,6 @@ def n_body_dir(n):
 
 def harvest_data(db,method,n):
     for result in db[method]['results']:
-        print(getattr(sys.modules[__name__],'harvest_{}_data'.format(result)))
         getattr(sys.modules[__name__],'harvest_{}_data'.format(result))(db,method,n)
 
 def harvest_g09(db,method,n):
@@ -1121,7 +1120,6 @@ def harvest_scf_dipole_data(db,method,n):
             db[method][n]['scf_dipole']['raw_data'].update({job:[x,y,z]})
 
 def harvest_quadrupole_data(db,method,n):
-    print("Grabbing quadrupole data.")
     body = n_body_dir(n)
     for job in db[method][n]['job_status']:
         with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
@@ -1136,51 +1134,17 @@ def harvest_quadrupole_data(db,method,n):
 
 def harvest_rotation_data(db,method,n):
     body = n_body_dir(n)
-    # optrot holds list of gathered rotations in order: length, velocity,
-    # modified velocity gauges for each omega (in
-    # the order specified by the user)
-
-    # Get gauge and determine which gauges to grab
-    #gauge = psi4.get_global_option('GAUGE')
-    #if gauge == 'LENGTH':
-    #    gauge = ['length-gauge']
-    #elif gauge == 'VELOCITY':
-    #    gauge = ['velocity-gauge', 'modified velocity-gauge']
-    #elif gauge == 'BOTH':
-    #    gauge = ['length-gauge', 'velocity-gauge',
-    #             'modified velocity-gauge']
-    # Get omega list and convert to atomic units
-    #omega = psi4.get_global_option('OMEGA')
-    #units = 'AU'
-    #if len(omega) > 1:
-    #    units = omega.pop()
-    #if units in ['HZ', 'Hz', 'hz']:
-    #    omega = [x * (p4const.psi_h / p4const.psi_hartree2J) for x in omega]
-    #elif units in ['AU', 'Au', 'au']:
-    #    pass
-    #elif units in ['NM', 'nm']:
-    #    omega = [((p4const.psi_c * p4const.psi_h * 1e9) / (x * p4const.psi_hartree2J)) for x in omega]
-    #elif units in ['EV', 'ev', 'eV']:
-    #    omega = [(x / p4const.psi_hartree2ev) for x in omega]
-
-    # Grab the data
+    name = method.upper()
     for job in db[method][n]['job_status']:
-        get_next = False
-        optrot = []
-        with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
-            for line in outfile:
-                # Assume specific rotations are presented in the expected order:
-                # length, velocity, modified velocity gauge for each wavelength
-                # in the user specified order
-                # ONLY collecting MVG data at this point
-                if 'modified velocity' in line:
-                    get_next = True
-                if '[alpha]_(' in line and get_next:
-                    (i,j, rotation, k,l) = line.split()
-                    optrot.append(float(rotation))
-                    get_next = False
-        # Add list of rotations onto database entry
-        db[method][n]['rotation']['raw_data'].update({job: optrot})
+        with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
+            jout = json.load(outfile)
+            # Only worrying about Modified Velocity Gauge data for now
+            # Need to fix psivars dict (called w/ core.get_variables(), 
+            # stored in output.json) to include ALL omegas, not just 
+            # the last one computed
+            optrot = jout["{} SPECIFIC ROTATION (MVG)".format(name)]
+            db[method][n]['rotation']['raw_data'].update({job: optrot})
+                
 
 def harvest_rotation_tensor_data(db, method, n):
     body = n_body_dir(n)
@@ -1200,16 +1164,15 @@ def harvest_rotation_tensor_data(db, method, n):
 
 def harvest_polarizability_data(db, method, n):
     body = n_body_dir(n)
+    name = method.upper()
     for job in db[method][n]['job_status']:
-        pols = []
-        with open('{}/{}/{}/output.dat'.format(method,body,job),'r') as outfile:
-            for line in outfile:
-                # Assume polarizabilities are presented in order of wavelengths
-                # as specified by the user in the input file.
-                if 'alpha_(' in line:
-                    (i,j, value, l) = line.split()
-                    pols.append(float(value))
-        db[method][n]['polarizability']['raw_data'].update({job: pols})
+        with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
+            jout = json.load(outfile)
+            # Need to fix psivars dict (called w/ core.get_variables(), 
+            # stored in output.json) to include ALL omegas, not just 
+            # the last one computed
+            pols = jout["{} DIPOLE POLARIZABILITY".format(name)]
+            db[method][n]['polarizability']['raw_data'].update({job: pols})
 
 def harvest_polarizability_tensor_data(db, method, n):
     body = n_body_dir(n)
