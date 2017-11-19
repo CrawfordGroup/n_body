@@ -122,6 +122,8 @@ def initialize_database(database, kwargs):
     database['pcm']              = False
     if 'properties' in kwargs:
         database['n_body_func'] = psi4.properties
+        database['omega'] = psi4.core.get_option('CCRESPONSE','OMEGA')
+        database['omega'].pop()
     else:
         database['n_body_func'] = psi4.energy
     database['methods']          = {}
@@ -1135,6 +1137,8 @@ def harvest_quadrupole_data(db,method,n):
 def harvest_rotation_data(db,method,n):
     body = n_body_dir(n)
     name = method.upper()
+    for omega in db['omega']:
+        db[method][n]['rotation']['raw_data'][omega] = {}
     for job in db[method][n]['job_status']:
         with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
             jout = json.load(outfile)
@@ -1142,8 +1146,9 @@ def harvest_rotation_data(db,method,n):
             # Need to fix psivars dict (called w/ core.get_variables(), 
             # stored in output.json) to include ALL omegas, not just 
             # the last one computed
-            optrot = jout["{} SPECIFIC ROTATION (MVG)".format(name)]
-            db[method][n]['rotation']['raw_data'].update({job: optrot})
+            for omega in db['omega']:
+                optrot = jout["{} SPECIFIC ROTATION (MVG) @ {}NM".format(name, omega)]
+                db[method][n]['rotation']['raw_data'][omega].update({job: optrot})
                 
 
 def harvest_rotation_tensor_data(db, method, n):
@@ -1165,14 +1170,17 @@ def harvest_rotation_tensor_data(db, method, n):
 def harvest_polarizability_data(db, method, n):
     body = n_body_dir(n)
     name = method.upper()
+    for omega in db['omega']:
+        db[method][n]['polarizability']['raw_data'][omega] = {}
     for job in db[method][n]['job_status']:
         with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
             jout = json.load(outfile)
             # Need to fix psivars dict (called w/ core.get_variables(), 
             # stored in output.json) to include ALL omegas, not just 
             # the last one computed
-            pols = jout["{} DIPOLE POLARIZABILITY".format(name)]
-            db[method][n]['polarizability']['raw_data'].update({job: pols})
+            for omega in db['omega']:
+                pols = jout["{} DIPOLE POLARIZABILITY @ {}NM".format(name, omega)]
+                db[method][n]['polarizability']['raw_data'][omega].update({job: pols})
 
 def harvest_polarizability_tensor_data(db, method, n):
     body = n_body_dir(n)
