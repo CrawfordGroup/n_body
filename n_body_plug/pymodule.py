@@ -349,20 +349,18 @@ def run_n_body(name, **kwargs):
     db.close()
     db = shelve.open('database',writeback=True)
 
-#    # Gather results
-#    #### NOTE: skipping results gathering for now, working on input generation####
-#    if not db['results_computed']:
-#        for method in db['methods'].keys():
-#            for field in db[method]['farm']:
-#                print(field)
-#                num_fin = db[method][field]['num_jobs_complete']
-#                tot_num = db[method][field]['total_num_jobs']
-#                print('{}/{} finished'.format(num_fin,tot_num))
-#                if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
+    # Gather results
+    if not db['results_computed']:
+        for method in db['methods'].keys():
+            for field in db[method]['farm']:
+                num_fin = db[method][field]['num_jobs_complete']
+                tot_num = db[method][field]['total_num_jobs']
+                print('{}/{} finished'.format(num_fin,tot_num))
+                if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
 #                    if method in n_body.dft_methods:
 #                        n_body.harvest_g09(db,method,field)
 #                    else:
-#                        n_body.harvest_data(db,method,field)
+                    n_body.harvest_data(db,method,field)
 #            for field in db[method]['farm']:
 #                if isinstance(field, int):
 #                    n_body.cook_data(db,method,field)
