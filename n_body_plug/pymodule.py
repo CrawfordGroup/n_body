@@ -350,11 +350,9 @@ def run_n_body(name, **kwargs):
     db = shelve.open('database',writeback=True)
 
     # Gather results
-    #### NOTE: testing data harvesting, DO NOT TRUST!!!####
     if not db['results_computed']:
         for method in db['methods'].keys():
             for field in db[method]['farm']:
-                print("field: {}".format(field))
                 num_fin = db[method][field]['num_jobs_complete']
                 tot_num = db[method][field]['total_num_jobs']
                 print('{}/{} finished'.format(num_fin,tot_num))
