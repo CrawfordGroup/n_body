@@ -312,6 +312,7 @@ def run_n_body(name, **kwargs):
 #            else:
             outname = 'output.dat'
             complete_message = 'Psi4 exiting successfully'
+            error_message = 'Psi4 encountered an error'
             # Check all n_body_levels
             for field in db[method]['farm']:
                 print(field)
@@ -325,7 +326,7 @@ def run_n_body(name, **kwargs):
                     for job,status in db_stat.items():
                         if status == 'complete':
                             n_complete += 1
-                        elif status in ('not_started', 'running'):
+                        elif status in ('not_started', 'running', 'error'):
                             try:
                                 outfile = open('{}/{}/{}/{}'.format(method,n_body.n_body_dir(field),job,outname))
                                 for line in outfile:
@@ -335,6 +336,9 @@ def run_n_body(name, **kwargs):
                                         # of g09, not when the job is totally finished.
                                         db_stat[job] = 'complete'
                                         n_complete += 1
+                                        break
+                                    elif error_message in line:
+                                        db_stat[job] = 'error'
                                         break
                                 else:
                                     db_stat[job] = 'running'
