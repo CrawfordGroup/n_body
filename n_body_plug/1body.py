@@ -73,7 +73,7 @@ for method in method_list:
             job,val = job_list.popitem(last=True)
 #           Example: job = 2 and val = not_started
 #           Actually pops the entry out of the job_list so that {while job_list:} actually ends
-            if val == 'not_started': # For now, only start not_started jobs. Start dead jobs later
+            if (val == 'not_started') or (val == 'error'): 
                 print(job)
                 print('{}/{}/{}'.format(method,body,job))
                 os.chdir('{}/{}/{}'.format(method,body,job))
