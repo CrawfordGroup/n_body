@@ -4,3 +4,4 @@ cc2/
 database.*
 output.dat
 sub_*
+__pychache__*
