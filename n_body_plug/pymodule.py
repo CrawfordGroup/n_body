@@ -34,7 +34,7 @@ from psi4.driver.procrouting import proc_util
 
 ##### IMPORTS REQUIRED FOR TAYLOR'S run_n_body() FUNCTION (SEE OLD proc.py)#####
 import shelve
-import n_body
+from . import n_body
 import itertools
 #os is already imported in n_body
 import os

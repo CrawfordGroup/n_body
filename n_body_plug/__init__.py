@@ -36,4 +36,4 @@ __author__  = 'Psi4 Developer'
 
 # Load Python modules
 from .pymodule import *
-#from .n_body import *
+from .n_body import *

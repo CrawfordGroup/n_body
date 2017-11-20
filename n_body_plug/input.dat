@@ -47,7 +47,7 @@ set n_body {
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 3})
 
 # current running examples of property calculations
-#n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['quadrupole'])
+n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['quadrupole'])
 set {
     omega [355, 436, nm]
 }

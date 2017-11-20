@@ -1892,4 +1892,3 @@ def ghost_dir(indexes, ghost):
             directory += '_'
     return(directory)
 
-
