@@ -359,7 +359,7 @@ def run_n_body(name, **kwargs):
             for field in db[method]['farm']:
                 num_fin = db[method][field]['num_jobs_complete']
                 tot_num = db[method][field]['total_num_jobs']
-                print('{}/{} finished'.format(num_fin,tot_num))
+#                print('{}/{} finished'.format(num_fin,tot_num))
                 if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
 #                    if method in n_body.dft_methods:
 #                        n_body.harvest_g09(db,method,field)
