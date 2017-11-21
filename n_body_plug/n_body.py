@@ -279,11 +279,12 @@ def banner(db):
         psi4.print_stdout(complete_message)
     else:
         for method in db['methods']:
-            psi4.print_stdout('        ==> {} <==\n'.format(method.upper()))
-            for n in range(1,db[method]['n_body_max']+1):
-                for job,stat in db[method][n]['job_status'].items():
-                    if stat != 'complete':
-                        psi4.print_stdout('{} {}\n'.format(job,stat))
+            psi4.print_stdout('        ==> {} jobs running <==\n'.format(method.upper()))
+            # more super annoying prints, muting for now
+#            for n in range(1,db[method]['n_body_max']+1):
+#                for job,stat in db[method][n]['job_status'].items():
+#                    if stat != 'complete':
+#                        psi4.print_stdout('{} {}\n'.format(job,stat))
 
 #    # RESULTS
 #    #### NOTE: SKIPPING RESULTS FOR NOW #####
