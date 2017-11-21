@@ -367,9 +367,9 @@ def run_n_body(name, **kwargs):
 #                        n_body.harvest_g09(db,method,field)
 #                    else:
                     n_body.harvest_data(db,method,field)
-#            for field in db[method]['farm']:
-#                if isinstance(field, int):
-#                    n_body.cook_data(db,method,field)
+            for field in db[method]['farm']:
+                if isinstance(field, int):
+                    n_body.cook_data(db,method,field)
 #                    #if db['bsse'] == 'vmfc' and field > 1:
 #                    #    n_body.vmfc_cook(db, method, field)
 #                    #    n_body.mbcp_cook(db, method, field)
