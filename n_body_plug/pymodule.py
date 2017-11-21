@@ -314,6 +314,7 @@ def run_n_body(name, **kwargs):
             complete_message = 'Psi4 exiting successfully'
             error_message = 'Psi4 encountered an error'
             # Check all n_body_levels
+            print('Before job checking:')
             for field in db[method]['farm']:
                 num_fin = db[method][field]['num_jobs_complete']
                 tot_num = db[method][field]['total_num_jobs']
@@ -356,10 +357,11 @@ def run_n_body(name, **kwargs):
     # Gather results
     if not db['results_computed']:
         for method in db['methods'].keys():
+            print('\nAfter job checking:') 
             for field in db[method]['farm']:
                 num_fin = db[method][field]['num_jobs_complete']
                 tot_num = db[method][field]['total_num_jobs']
-#                print('{}/{} finished'.format(num_fin,tot_num))
+                print('{}/{} {}-body jobs finished'.format(num_fin,tot_num,field))
                 if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
 #                    if method in n_body.dft_methods:
 #                        n_body.harvest_g09(db,method,field)
