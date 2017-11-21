@@ -315,10 +315,9 @@ def run_n_body(name, **kwargs):
             error_message = 'Psi4 encountered an error'
             # Check all n_body_levels
             for field in db[method]['farm']:
-                print(field)
                 num_fin = db[method][field]['num_jobs_complete']
                 tot_num = db[method][field]['total_num_jobs']
-                print('{}/{} finished'.format(num_fin,tot_num))
+                print('{}/{} {}-body jobs finished'.format(num_fin,tot_num,field))
                 n_complete = num_fin
                 if num_fin != tot_num:
                     db_stat = db[method][field]['job_status']
@@ -344,7 +343,8 @@ def run_n_body(name, **kwargs):
                                     db_stat[job] = 'running'
                                     n_incomplete += 1
                             except:
-                                print('Exception')
+                                # this print statement is super annoying, muting it for now
+#                                print('Exception')
                                 n_incomplete += 1
                 db[method][field]['num_jobs_complete'] = n_complete
         if n_incomplete == 0:
