@@ -1767,7 +1767,7 @@ def plant(cluster, db, kwargs, method, directory):
 #        omega_list = psi4.get_global_option('OMEGA')
         if 'omega' in db:
             omega_list = db['omega']
-            units = nm
+            units = 'nm'
         # NOTE: doing everything in nm for now... should fix this
 #        if len(omega_list) > 1:
 #            units = omega_list.pop()
@@ -1796,7 +1796,8 @@ def plant(cluster, db, kwargs, method, directory):
                     infile.write('\n--Link1--\n\n')
                 if db['num_threads']:
                     infile.write('%NProcShared={}\n'.format(db['num_threads']))
-                infile.write('%Mem={}MB\n'.format(psi4.get_memory()/1000000))
+                infile.write('%Mem={}MB\n'.format(int(psi4.get_memory()/1000000)))
+                # G09 only likes integer values on MEM
                 infile.write('#p {}/{} NoSymmetry'.format(method,basis))
                 if omega_list:
                     infile.write(' CPHF(RdFreq)')
@@ -1837,7 +1838,7 @@ def plant(cluster, db, kwargs, method, directory):
         else:
             if db['num_threads']:
                 infile.write('%NProcShared={}\n'.format(db['num_threads']))
-            infile.write('%Mem={}MB\n'.format(psi4.get_memory()/1000000))
+            infile.write('%Mem={}MB\n'.format(int(psi4.get_memory()/1000000)))
             infile.write('#p {}/{} NoSymmetry'.format(method,basis))
             if db['pcm']:
                 infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
