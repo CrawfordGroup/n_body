@@ -1100,6 +1100,7 @@ def harvest_data(db,method,n):
         getattr(sys.modules[__name__],'harvest_{}_data'.format(result))(db,method,n)
 
 def harvest_g09(db,method,n):
+    print('Harvesting g09...')
     for result in db[method]['results']:
         getattr(sys.modules[__name__],'harvest_g09_{}'.format(result))(db,method,n)
 
@@ -1289,12 +1290,12 @@ def harvest_g09_rotation(db,method,n):
                             print('There has been an overflow in the optical rotation data and they are now meaningless after {}-body.'.format(n))
         # Resort the rotations from descending wavelength (nm) order to user
         # specified order
-        optrot = reorder_g09_rotations(optrot)
+        optrot = reorder_g09_rotations(optrot, db)
 
         # Add list of rotations onto database entry
         db[method][n]['rotation']['raw_data'].update({job: optrot})
 
-def reorder_g09_rotations(optrot,omega=None):
+def reorder_g09_rotations(optrot, db, omega=None):
     # g09 specific rotations are output in order of wavelength
     # ascending/descending depending on the units
     # Descending:  NM
@@ -1303,22 +1304,28 @@ def reorder_g09_rotations(optrot,omega=None):
     # be in the same order as specified by the user.
 
     # Get user specified omega list
-    if not omega:
-        omega = psi4.get_global_option('OMEGA')
-    if len(omega) > 1:
-        # Remove the units entry from omega
-        units = omega.pop()
-    else:
-        units = 'au' #default units
+#    if not omega:
+#        omega = psi4.get_global_option('OMEGA')
+
+#    if len(omega) > 1:
+#        # Remove the units entry from omega
+#        units = omega.pop()
+#    else:
+#        units = 'au' #default units
+    # just working with units in nm for now
+    if 'omega' in db:
+        omega_list = db['omega']
+        units = 'nm'
+
     
     # Omega order contains a list of numbers for keeping track of the
     # original user specified order of omega
     omega_order = []
-    for n in range(1,len(omega)+1):
+    for n in range(1,len(omega_list)+1):
         omega_order.append(n)
 
     # Zip omega with our order tracking list
-    temp = zip(omega, omega_order)
+    temp = zip(omega_list, omega_order)
     # sort the zipped list in terms of omega (ascending)
     temp.sort()
     if units.upper() == 'NM':
@@ -1330,9 +1337,9 @@ def reorder_g09_rotations(optrot,omega=None):
     omega_descend, omega_order = zip(*temp)
 
     # Check if the data is tensors (i.e. longer than the number of omegas)
-    if len(optrot) > len(omega):
+    if len(optrot) > len(omega_list):
         temp_data = []
-        for i in range(len(omega)):
+        for i in range(len(omega_list)):
             tensor = []
             # Assuming 3x3 tensors
             for j in range(9):
