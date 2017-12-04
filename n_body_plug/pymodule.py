@@ -366,7 +366,6 @@ def run_n_body(name, **kwargs):
                 num_fin = db[method][field]['num_jobs_complete']
                 tot_num = db[method][field]['total_num_jobs']
                 print('{}/{} {}-body jobs finished'.format(num_fin,tot_num,field))
-                print('About to enter if statement')
                 if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
 #                    if method in n_body.dft_methods:
 #                        n_body.harvest_g09(db,method,field)
