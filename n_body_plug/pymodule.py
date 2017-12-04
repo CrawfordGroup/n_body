@@ -366,7 +366,8 @@ def run_n_body(name, **kwargs):
 #                    if method in n_body.dft_methods:
 #                        n_body.harvest_g09(db,method,field)
 #                    else:
-                    n_body.harvest_data(db,method,field)
+                    if method != 'b3lyp':
+                        n_body.harvest_data(db,method,field)
 #            for field in db[method]['farm']:
 #                if isinstance(field, int):
 #                    n_body.cook_data(db,method,field)
