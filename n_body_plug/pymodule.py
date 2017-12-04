@@ -307,12 +307,13 @@ def run_n_body(name, **kwargs):
         for method in db['methods'].keys():
             #### NOTE: dft_methods is defunct #####
 #            if method in n_body.dft_methods:
-#                outname = 'input.log'
-#                complete_message = 'Normal termination of Gaussian'
-#            else:
-            outname = 'output.dat'
-            complete_message = 'Psi4 exiting successfully'
-            error_message = 'Psi4 encountered an error'
+            if method == 'b3lyp': 
+                outname = 'input.log'
+                complete_message = 'Normal termination of Gaussian'
+            else:
+                outname = 'output.dat'
+                complete_message = 'Psi4 exiting successfully'
+                error_message = 'Psi4 encountered an error'
             # Check all n_body_levels
             print('Before job checking:')
             for field in db[method]['farm']:
