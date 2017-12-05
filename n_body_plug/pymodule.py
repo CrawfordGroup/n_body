@@ -310,6 +310,7 @@ def run_n_body(name, **kwargs):
             if method == 'b3lyp': 
                 outname = 'input.log'
                 complete_message = 'Normal termination of Gaussian'
+                error_message = 'Error termination'
             else:
                 outname = 'output.dat'
                 complete_message = 'Psi4 exiting successfully'
@@ -346,7 +347,7 @@ def run_n_body(name, **kwargs):
                                     n_incomplete += 1
                             except:
                                 # this print statement is super annoying, muting it for now
-#                                print('Exception')
+#                                print('Exception: probably could not open file for {}'.format(job))
                                 n_incomplete += 1
                 db[method][field]['num_jobs_complete'] = n_complete
         if n_incomplete == 0:
