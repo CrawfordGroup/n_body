@@ -1814,7 +1814,7 @@ def plant(cluster, db, kwargs, method, directory):
                     infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
                 # Uncomment following line for tight convergence
                 #infile.write(' SCF(Conver=12,MaxCycle=512) Integral(UltraFine)')
-                infile.write(' {}\n\n'.format(psi4_to_g09[prop]))
+                infile.write(' {} FormCheck\n\n'.format(psi4_to_g09[prop]))
 
                 # Write autogen comment and job name info
                 infile.write('This is a g09 input file auto-generated '
