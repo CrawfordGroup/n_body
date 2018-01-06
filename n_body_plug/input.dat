@@ -47,11 +47,11 @@ set n_body {
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 3})
 
 # current running examples of property calculations
-n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['quadrupole'])
-set {
-    omega [355, 436, nm]
-}
-n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['polarizability'])
+#n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['quadrupole'])
+#set {
+#    omega [355, 436, nm]
+#}
+#n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['polarizability'])
 #set {
 #   gauge both 
 #   omega [355, 436, nm]
@@ -67,6 +67,7 @@ n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['polarizability'])
 
 # current running example for ssfc bsse calculations
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'ssfc'})
+n_body_plug.run_n_body('b3lyp', n_body={'b3lyp': 2, 'bsse': 'ssfc'})
 
 
 # generated input files should also have the following
