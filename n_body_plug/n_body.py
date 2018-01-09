@@ -1823,7 +1823,8 @@ def plant(cluster, db, kwargs, method, directory):
 
                 # Write geometry (units = ang)
 #                infile.write('{}\n'.format(cluster.save_string_xyz_g09()))
-                infile.write('{}\n'.format(cluster.save_string_xyz()))
+#                infile.write('{}\n'.format(cluster.save_string_xyz(False)))
+                infile.write('{}\n'.format(save_geom_string_safe(cluster,'g09')))
                 # Write user provided wavelengths
                 for wavelength in omega_list:
                     if units.upper() == 'NM':
@@ -1859,7 +1860,10 @@ def plant(cluster, db, kwargs, method, directory):
 
             # Write geometry (units = ang)
 #            infile.write('{}\n'.format(cluster.save_string_xyz_g09()))
-            infile.write('{}\n'.format(cluster.save_string_xyz()))
+            #infile.write('{}\n'.format(cluster.save_string_xyz(False)))
+#            print(cluster)
+#            print("Here is the output: {}".format(save_geom_string_safe(cluster,'g09')))
+            infile.write('{}\n'.format(save_geom_string_safe(cluster,'g09')))
             # Write user provided wavelengths
             infile.write('\n')
             # Check for GEN basis
@@ -1907,3 +1911,32 @@ def ghost_dir(indexes, ghost):
             directory += '_'
     return(directory)
 
+def save_geom_string_safe(mol, mode):
+    """Returns the cartesian geometry of a molecule as a string.
+      Parameters
+      ----------
+      mol : psi4.core.Molecule object
+      mode : string, print mode either 'psi4' or 'g09'
+
+      Returns
+      -------
+      geom : string, formatted cartesian geometry suitable for input file(s) 
+
+      Notes
+      -----
+      Please use Angstroms for now. I'm not sure how other units will react.
+    """
+
+    geom = '{},{}\n'.format(mol.molecular_charge(),mol.multiplicity())
+
+    if mode.lower() == 'psi4':
+        for i in range(mol.natom()):
+            geom += '  {} {} {} {}\n'.format((mol.symbol(i) if mol.Z(i) else 'Gh({})'.format(mol.symbol(i))), mol.fx(i), mol.fy(i), mol.fz(i)) 
+            
+
+    if mode.lower() == 'g09':
+        for i in range(mol.natom()):
+            geom += '  {} {} {} {}\n'.format((mol.symbol(i) if mol.Z(i) else '{}-Bq'.format(mol.symbol(i))), mol.fx(i), mol.fy(i), mol.fz(i)) 
+
+    print("Here's the geom:\n {}".format(geom))
+    return geom
