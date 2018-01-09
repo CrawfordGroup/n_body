@@ -1847,7 +1847,7 @@ def plant(cluster, db, kwargs, method, directory):
             if db['num_threads']:
                 infile.write('%NProcShared={}\n'.format(db['num_threads']))
             infile.write('%Mem={}MB\n'.format(int(psi4.get_memory()/1000000)))
-            infile.write('#p {}/{} NoSymmetry'.format(method,basis))
+            infile.write('#p {}/{} NoSymmetry FormCheck'.format(method,basis))
             if db['pcm']:
                 infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
             # Uncomment following line for tight convergence
@@ -1931,12 +1931,11 @@ def save_geom_string_safe(mol, mode):
 
     if mode.lower() == 'psi4':
         for i in range(mol.natom()):
-            geom += '  {} {} {} {}\n'.format((mol.symbol(i) if mol.Z(i) else 'Gh({})'.format(mol.symbol(i))), mol.fx(i), mol.fy(i), mol.fz(i)) 
+            geom += ' {} {} {} {}\n'.format((mol.symbol(i) if mol.Z(i) else 'Gh({})'.format(mol.symbol(i))), mol.fx(i), mol.fy(i), mol.fz(i)) 
             
 
     if mode.lower() == 'g09':
         for i in range(mol.natom()):
-            geom += '  {} {} {} {}\n'.format((mol.symbol(i) if mol.Z(i) else '{}-Bq'.format(mol.symbol(i))), mol.fx(i), mol.fy(i), mol.fz(i)) 
+            geom += ' {} {} {} {}\n'.format((mol.symbol(i) if mol.Z(i) else '{}-Bq'.format(mol.symbol(i))), mol.fx(i), mol.fy(i), mol.fz(i)) 
 
-    print("Here's the geom:\n {}".format(geom))
     return geom
