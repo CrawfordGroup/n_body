@@ -1768,8 +1768,10 @@ def plant(cluster, db, kwargs, method, directory):
     if (method == 'b3lyp'):
         # Using g09 for dft properties
         # Convert from psi4 keywords to g09 equivalent
+        # Note that Polar=Dipole calculates quadrupoles as well
         psi4_to_g09 = { 'rotation': 'Polar=OptRot',
-                        'polarizability': 'Polar=Dipole' }
+                        'polarizability': 'Polar=Dipole',
+                        'quadrupole': 'Polar=Dipole' }
         # Did the user specify omegas?
 #        omega_list = psi4.get_global_option('OMEGA')
         if 'omega' in db:
