@@ -31,6 +31,13 @@ set n_body {
   print 1
 }
 
+set {
+   gauge velocity 
+   omega [355, 436, nm]
+   freeze_core true
+}
+
+
 #n_body_plug.exampleFN()
 
 # Taylor's "newest" input file example:
@@ -47,16 +54,8 @@ set n_body {
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 3})
 
 # current running examples of property calculations
-n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['quadrupole'])
-set {
-    omega [355, 436, nm]
-}
-n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['polarizability'])
-#set {
-#   gauge both 
-#   omega [355, 436, nm]
-#   freeze_core true
-#}
+#n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['quadrupole'])
+#n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['polarizability'])
 #n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['rotation'])
 
 # current running example for vmfc bsse calculations
@@ -66,7 +65,9 @@ n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['polarizability'])
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'mbcp'})
 
 # current running example for ssfc bsse calculations
-#n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'ssfc'})
+#n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'ssfc'}, properties=['quadrupole'])
+# gaussian integration is currently being fixed
+n_body_plug.run_n_body('b3lyp', n_body={'b3lyp': 2, 'bsse': 'ssfc'}, properties=['quadrupole'])
 
 
 # generated input files should also have the following

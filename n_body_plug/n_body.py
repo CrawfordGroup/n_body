@@ -1929,15 +1929,18 @@ def save_geom_string_safe(mol, mode):
       Please use Angstroms for now. I'm not sure how other units will react.
     """
 
+    # mol.fn(i) gives in bohr, so must convert back to angstroms if input file asks
+    factor = psi4.constants.bohr2angstroms if str(mol.units) == 'GeometryUnits.Angstrom' else 1.0 
+
     geom = '{},{}\n'.format(mol.molecular_charge(),mol.multiplicity())
 
     if mode.lower() == 'psi4':
         for i in range(mol.natom()):
-            geom += ' {} {} {} {}\n'.format((mol.symbol(i) if mol.Z(i) else 'Gh({})'.format(mol.symbol(i))), mol.fx(i), mol.fy(i), mol.fz(i)) 
+            geom += ' {} {} {} {}\n'.format((mol.symbol(i) if mol.Z(i) else 'Gh({})'.format(mol.symbol(i))), mol.fx(i) * factor, mol.fy(i) * factor, mol.fz(i) * factor) 
             
 
     if mode.lower() == 'g09':
         for i in range(mol.natom()):
-            geom += ' {} {} {} {}\n'.format((mol.symbol(i) if mol.Z(i) else '{}-Bq'.format(mol.symbol(i))), mol.fx(i), mol.fy(i), mol.fz(i)) 
+            geom += ' {} {} {} {}\n'.format((mol.symbol(i) if mol.Z(i) else '{}-Bq'.format(mol.symbol(i))), mol.fx(i) * factor, mol.fy(i) * factor, mol.fz(i) * factor) 
 
     return geom
