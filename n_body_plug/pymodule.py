@@ -359,22 +359,22 @@ def run_n_body(name, **kwargs):
     db = shelve.open('database',writeback=True)
 
     # Gather results
-    if not db['results_computed']:
-        for method in db['methods'].keys():
-            print('\nAfter job checking:') 
-            for field in db[method]['farm']:
-                num_fin = db[method][field]['num_jobs_complete']
-                tot_num = db[method][field]['total_num_jobs']
-                print('{}/{} {}-body jobs finished'.format(num_fin,tot_num,field))
-                if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
+#    if not db['results_computed']:
+#        for method in db['methods'].keys():
+#            print('\nAfter job checking:') 
+#            for field in db[method]['farm']:
+#                num_fin = db[method][field]['num_jobs_complete']
+#                tot_num = db[method][field]['total_num_jobs']
+#                print('{}/{} {}-body jobs finished'.format(num_fin,tot_num,field))
+#                if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
 #                    if method in n_body.dft_methods:
 #                        n_body.harvest_g09(db,method,field)
-                    if (method == 'b3lyp'):
-                        print('Gotta harvest that b3lyp data')
-                        n_body.harvest_g09(db,method,field)
-                    else:
-                        print('Gotta harvest that cc2 data')
-                        n_body.harvest_data(db,method,field)
+#                    if (method == 'b3lyp'):
+#                        print('Gotta harvest that b3lyp data')
+#                        n_body.harvest_g09(db,method,field)
+#                    else:
+#                        print('Gotta harvest that cc2 data')
+#                        n_body.harvest_data(db,method,field)
 #            for field in db[method]['farm']:
 #                if isinstance(field, int):
 #                    n_body.cook_data(db,method,field)
