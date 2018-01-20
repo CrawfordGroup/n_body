@@ -1,6 +1,7 @@
 *.swp
 timer.dat
 cc2/
+b3lyp/
 database.*
 output.dat
 sub_*

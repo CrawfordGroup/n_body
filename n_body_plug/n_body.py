@@ -1040,9 +1040,8 @@ def process_options(name, db, options):
                 if key in psi4.driver.procedures['{}'.format(func.__name__)].keys():
                     processed_options['methods'].update({key:options[key]})
                 # dft method?
-#                elif key in dft_methods:
-#                    print("dft_methods")
-#                    processed_options['methods'].update({key:options[key]})
+                elif (key == 'b3lyp'):
+                    processed_options['methods'].update({key:options[key]})
 #                # distributed?
 #                elif key == 'distributed':
 #                    print("distributed")
@@ -1101,6 +1100,7 @@ def harvest_data(db,method,n):
         getattr(sys.modules[__name__],'harvest_{}_data'.format(result))(db,method,n)
 
 def harvest_g09(db,method,n):
+    print('Harvesting g09...')
     for result in db[method]['results']:
         getattr(sys.modules[__name__],'harvest_g09_{}'.format(result))(db,method,n)
 
@@ -1290,12 +1290,12 @@ def harvest_g09_rotation(db,method,n):
                             print('There has been an overflow in the optical rotation data and they are now meaningless after {}-body.'.format(n))
         # Resort the rotations from descending wavelength (nm) order to user
         # specified order
-        optrot = reorder_g09_rotations(optrot)
+        optrot = reorder_g09_rotations(optrot, db)
 
         # Add list of rotations onto database entry
         db[method][n]['rotation']['raw_data'].update({job: optrot})
 
-def reorder_g09_rotations(optrot,omega=None):
+def reorder_g09_rotations(optrot, db, omega=None):
     # g09 specific rotations are output in order of wavelength
     # ascending/descending depending on the units
     # Descending:  NM
@@ -1304,22 +1304,29 @@ def reorder_g09_rotations(optrot,omega=None):
     # be in the same order as specified by the user.
 
     # Get user specified omega list
-    if not omega:
-        omega = psi4.get_global_option('OMEGA')
-    if len(omega) > 1:
-        # Remove the units entry from omega
-        units = omega.pop()
-    else:
-        units = 'au' #default units
+#    if not omega:
+#        omega = psi4.get_global_option('OMEGA')
+
+#    if len(omega) > 1:
+#        # Remove the units entry from omega
+#        units = omega.pop()
+#    else:
+#        units = 'au' #default units
+    # just working with units in nm for now
+    # last entry is always the units
+    if 'omega' in db:
+        omega_list = db['omega']
+        units = omega_list.pop()
+
     
     # Omega order contains a list of numbers for keeping track of the
     # original user specified order of omega
     omega_order = []
-    for n in range(1,len(omega)+1):
+    for n in range(1,len(omega_list)+1):
         omega_order.append(n)
 
     # Zip omega with our order tracking list
-    temp = zip(omega, omega_order)
+    temp = zip(omega_list, omega_order)
     # sort the zipped list in terms of omega (ascending)
     temp.sort()
     if units.upper() == 'NM':
@@ -1331,9 +1338,9 @@ def reorder_g09_rotations(optrot,omega=None):
     omega_descend, omega_order = zip(*temp)
 
     # Check if the data is tensors (i.e. longer than the number of omegas)
-    if len(optrot) > len(omega):
+    if len(optrot) > len(omega_list):
         temp_data = []
-        for i in range(len(omega)):
+        for i in range(len(omega_list)):
             tensor = []
             # Assuming 3x3 tensors
             for j in range(9):
@@ -1761,127 +1768,141 @@ def plant(cluster, db, kwargs, method, directory):
     # Write psi4 input files
     # What type of function are we running?
     func = db['n_body_func']
-#    if method in dft_methods:
-#        # Using g09 for dft properties
-#        # Convert from psi4 keywords to g09 equivalent
-#        psi4_to_g09 = { 'rotation': 'Polar=OptRot',
-#                        'polarizability': 'Polar=Dipole' }
-#        # Did the user specify omegas?
+    if (method == 'b3lyp'):
+        # Using g09 for dft properties
+        # Convert from psi4 keywords to g09 equivalent
+        # Note that Polar=Dipole calculates quadrupoles as well
+        psi4_to_g09 = { 'rotation': 'Polar=OptRot',
+                        'polarizability': 'Polar=Dipole',
+                        'quadrupole': 'Polar=Dipole' }
+        # Did the user specify omegas?
 #        omega_list = psi4.get_global_option('OMEGA')
+        if 'omega' in db:
+            omega_list = db['omega']
+            units = 'nm'
+        # NOTE: doing everything in nm for now... should fix this
 #        if len(omega_list) > 1:
 #            units = omega_list.pop()
 #        else:
 #            units = 'AU'
-#
-#        infile = open('{}/input.com'.format(directory),'w')
-#        basis = psi4.get_global_option('BASIS')
-#        # Check for n-aug-cc-pVXZ (G09 doesn't have them)
-#        # GEN basis is hard wired for n-aug-cc-pVXZ
-#        real_basis = ''
-#        gen_basis_list = ['D-AUG-CC-PVDZ','T-AUG-CC-PVDZ','Q-AUG-CC-PVDZ',
-#                          'D-AUG-CC-PVTZ','T-AUG-CC-PVTZ','Q-AUG-CC-PVTZ',
-#                          'D-AUG-CC-PVQZ','T-AUG-CC-PVQZ','Q-AUG-CC-PVQZ']
-#        if basis in gen_basis_list:
-#            real_basis = copy.deepcopy(basis)
-#            basis = 'GEN'
-#        # link keeps up with running multiple jobs in single
-#        # input.com file
-#        link = False
-#        # Write the job line command
-#        if 'properties' in kwargs:
-#            for prop in kwargs['properties']:
-#                if link:
-#                    infile.write('\n--Link1--\n\n')
-#                if db['num_threads']:
-#                    infile.write('%NProcShared={}\n'.format(db['num_threads']))
-#                infile.write('%Mem={}MB\n'.format(psi4.get_memory()/1000000))
-#                infile.write('#p {}/{} NoSymmetry'.format(method,basis))
-#                if omega_list:
-#                    infile.write(' CPHF(RdFreq)')
-#                    # Uncomment following line for tight convergence
-#                    #infile.write(' CPHF(Conver=12,RdFreq,Grid=UltraFine)')
-#                if db['pcm']:
-#                    infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
-#                # Uncomment following line for tight convergence
-#                #infile.write(' SCF(Conver=12,MaxCycle=512) Integral(UltraFine)')
-#                infile.write(' {}\n\n'.format(psi4_to_g09[prop]))
-#
-#                # Write autogen comment and job name info
-#                infile.write('This is a g09 input file auto-generated '
-#                         'by psi4 for an n_body {} job.\n'.format(func.__name__))
-#                infile.write('{}\n\n'.format(cluster.name()))
-#
-#                # Write geometry (units = ang)
+
+        infile = open('{}/input.com'.format(directory),'w')
+        basis = psi4.core.get_global_option('BASIS')
+#        basis = psi4.core.print_option('BASIS')
+        # Check for n-aug-cc-pVXZ (G09 doesn't have them)
+        # GEN basis is hard wired for n-aug-cc-pVXZ
+        real_basis = ''
+        gen_basis_list = ['D-AUG-CC-PVDZ','T-AUG-CC-PVDZ','Q-AUG-CC-PVDZ',
+                          'D-AUG-CC-PVTZ','T-AUG-CC-PVTZ','Q-AUG-CC-PVTZ',
+                          'D-AUG-CC-PVQZ','T-AUG-CC-PVQZ','Q-AUG-CC-PVQZ']
+        if basis in gen_basis_list:
+            real_basis = copy.deepcopy(basis)
+            basis = 'GEN'
+        # link keeps up with running multiple jobs in single
+        # input.com file
+        link = False
+        # Write the job line command
+        if 'properties' in kwargs:
+            for prop in kwargs['properties']:
+                if link:
+                    infile.write('\n--Link1--\n\n')
+                if db['num_threads']:
+                    infile.write('%NProcShared={}\n'.format(db['num_threads']))
+                infile.write('%Mem={}MB\n'.format(int(psi4.get_memory()/1000000)))
+                # G09 only likes integer values on MEM
+                infile.write('#p {}/{} NoSymmetry'.format(method,basis))
+                if omega_list:
+                    infile.write(' CPHF(RdFreq)')
+                    # Uncomment following line for tight convergence
+                    #infile.write(' CPHF(Conver=12,RdFreq,Grid=UltraFine)')
+                if db['pcm']:
+                    infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
+                # Uncomment following line for tight convergence
+                #infile.write(' SCF(Conver=12,MaxCycle=512) Integral(UltraFine)')
+                infile.write(' {} FormCheck\n\n'.format(psi4_to_g09[prop]))
+
+                # Write autogen comment and job name info
+                infile.write('This is a g09 input file auto-generated '
+                         'by psi4 for an n_body {} job.\n'.format(func.__name__))
+                infile.write('{}\n\n'.format(cluster.name()))
+
+                # Write geometry (units = ang)
 #                infile.write('{}\n'.format(cluster.save_string_xyz_g09()))
-#                # Write user provided wavelengths
-#                for wavelength in omega_list:
-#                    if units.upper() == 'NM':
-#                        infile.write('{}nm '.format(wavelength))
-#                    elif units.upper() == 'AU':
-#                        infile.write('{}au '.format(wavelength))
-#                    else:
-#                        # Would be good to auto-convert from hz and ev
-#                        # instead, but until then
-#                        raise ValidationError('Wavelengths must be in '      
-#                                              'NM or AU for use with g09')
-#                infile.write('\n')
-#                # Check for GEN basis
-#                # Works only with n-aug-cc-pVXZ basis
-#                if basis == 'GEN':
-#                    infile.write('\n@{}/basis_sets/gaussian/{}.gbs'.format(os.getenv('HOME'),real_basis))
-#                link = True
-#        # Otherwise assume energy calculation
-#        else:
-#            if db['num_threads']:
-#                infile.write('%NProcShared={}\n'.format(db['num_threads']))
-#            infile.write('%Mem={}MB\n'.format(psi4.get_memory()/1000000))
-#            infile.write('#p {}/{} NoSymmetry'.format(method,basis))
-#            if db['pcm']:
-#                infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
-#            # Uncomment following line for tight convergence
-#            #infile.write(' SCF(Conver=12,MaxCycle=512) Integral(UltraFine)')
-#
-#            # Write autogen comment and job name info
-#            infile.write('\n\nThis is a g09 input file auto-generated '
-#                     'by psi4 for an n_body {} job.\n'.format(func.__name__))
-#            infile.write('{}\n\n'.format(cluster.name()))
-#
-#            # Write geometry (units = ang)
+#                infile.write('{}\n'.format(cluster.save_string_xyz(False)))
+                infile.write('{}\n'.format(save_geom_string_safe(cluster,'g09')))
+                # Write user provided wavelengths
+                for wavelength in omega_list:
+                    if units.upper() == 'NM':
+                        infile.write('{}nm '.format(wavelength))
+                    elif units.upper() == 'AU':
+                        infile.write('{}au '.format(wavelength))
+                    else:
+                        # Would be good to auto-convert from hz and ev
+                        # instead, but until then
+                        raise ValidationError('Wavelengths must be in '      
+                                              'NM or AU for use with g09')
+                infile.write('\n')
+                # Check for GEN basis
+                # Works only with n-aug-cc-pVXZ basis
+                if basis == 'GEN':
+                    infile.write('\n@{}/basis_sets/gaussian/{}.gbs'.format(os.getenv('HOME'),real_basis))
+                link = True
+        # Otherwise assume energy calculation
+        else:
+            if db['num_threads']:
+                infile.write('%NProcShared={}\n'.format(db['num_threads']))
+            infile.write('%Mem={}MB\n'.format(int(psi4.get_memory()/1000000)))
+            infile.write('#p {}/{} NoSymmetry FormCheck'.format(method,basis))
+            if db['pcm']:
+                infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
+            # Uncomment following line for tight convergence
+            #infile.write(' SCF(Conver=12,MaxCycle=512) Integral(UltraFine)')
+
+            # Write autogen comment and job name info
+            infile.write('\n\nThis is a g09 input file auto-generated '
+                     'by psi4 for an n_body {} job.\n'.format(func.__name__))
+            infile.write('{}\n\n'.format(cluster.name()))
+
+            # Write geometry (units = ang)
 #            infile.write('{}\n'.format(cluster.save_string_xyz_g09()))
-#            # Write user provided wavelengths
-#            infile.write('\n')
-#            # Check for GEN basis
-#            # Hardwired for daDZ for now
-#            if basis == 'GEN':
-#                infile.write('\n@{}/basis_sets/gaussian/daDZ.gbs'.format(os.getenv('HOME')))
-#
-#        infile.write('\n')
-#        infile.close()
+            #infile.write('{}\n'.format(cluster.save_string_xyz(False)))
+#            print(cluster)
+#            print("Here is the output: {}".format(save_geom_string_safe(cluster,'g09')))
+            infile.write('{}\n'.format(save_geom_string_safe(cluster,'g09')))
+            # Write user provided wavelengths
+            infile.write('\n')
+            # Check for GEN basis
+            # Hardwired for daDZ for now
+            if basis == 'GEN':
+                infile.write('\n@{}/basis_sets/gaussian/daDZ.gbs'.format(os.getenv('HOME')))
+
+        infile.write('\n')
+        infile.close()
 #    # Otherwise assume method is a wfn method. All methods were
 #    # checked earlier for validity.
-#    else:
+    else:
 ##### NOTE: the rest of this function was indented under the "else" #####
 ##### statement, but I'm skipping DFT for now. #####
-    infile = open('{}/input.dat'.format(directory),'w')
-    infile.write('# This is a psi4 input file auto-generated for an'
+        infile = open('{}/input.dat'.format(directory),'w')
+        infile.write('# This is a psi4 input file auto-generated for an'
                  ' n_body {} job.\n'.format(func.__name__))
 ##### NOTE: The following commented lines are Taylor's old way of #####
 ##### generating inputs. The new code is largely based on the ROA #####
 ##### code roa.py #####
 #    infile.write(proc.basic_molecule_for_input(cluster))
 #    infile.write('\n\n')
-    mol_open = 'molecule ' + cluster.name() + ' {\n'
-    mol_close = '}'
-    infile.write("{}{}{}".format(mol_open,cluster.create_psi4_string_from_molecule(),mol_close))
-    infile.write(psi4.p4util.format_options_for_input())
-    infile.write("\n{}('{}', ".format(func.__name__, method))
-    for key,val in kwargs.items():
+        mol_open = 'molecule ' + cluster.name() + ' {\n'
+        mol_close = '}'
+        infile.write("{}{}{}".format(mol_open,cluster.create_psi4_string_from_molecule(),mol_close))
+        infile.write(psi4.p4util.format_options_for_input())
+        infile.write("\n{}('{}', ".format(func.__name__, method))
+        for key,val in kwargs.items():
         #infile.write('{}={}, '.format(key,val))
-        infile.write('{}={} '.format(key,val))
-    infile.write(')\n')
-    infile.write("""\n\nimport json\nwith open('output.json', 'w') as dumpf:\n""")
-    infile.write("""    json.dump(core.get_variables(), dumpf, indent=4)""")
-    infile.close()
+            infile.write('{}={} '.format(key,val))
+        infile.write(')\n')
+        infile.write("""\n\nimport json\nwith open('output.json', 'w') as dumpf:\n""")
+        infile.write("""    json.dump(core.get_variables(), dumpf, indent=4)""")
+        infile.close()
 
 def ghost_dir(indexes, ghost):
     directory = ''
@@ -1895,3 +1916,34 @@ def ghost_dir(indexes, ghost):
             directory += '_'
     return(directory)
 
+def save_geom_string_safe(mol, mode):
+    """Returns the cartesian geometry of a molecule as a string.
+      Parameters
+      ----------
+      mol : psi4.core.Molecule object
+      mode : string, print mode either 'psi4' or 'g09'
+
+      Returns
+      -------
+      geom : string, formatted cartesian geometry suitable for input file(s) 
+
+      Notes
+      -----
+      Please use Angstroms for now. I'm not sure how other units will react.
+    """
+
+    # mol.fn(i) gives in bohr, so must convert back to angstroms if input file asks
+    factor = psi4.constants.bohr2angstroms if str(mol.units) == 'GeometryUnits.Angstrom' else 1.0 
+
+    geom = '{},{}\n'.format(mol.molecular_charge(),mol.multiplicity())
+
+    if mode.lower() == 'psi4':
+        for i in range(mol.natom()):
+            geom += ' {} {} {} {}\n'.format((mol.symbol(i) if mol.Z(i) else 'Gh({})'.format(mol.symbol(i))), mol.fx(i) * factor, mol.fy(i) * factor, mol.fz(i) * factor) 
+            
+
+    if mode.lower() == 'g09':
+        for i in range(mol.natom()):
+            geom += ' {} {} {} {}\n'.format((mol.symbol(i) if mol.Z(i) else '{}-Bq'.format(mol.symbol(i))), mol.fx(i) * factor, mol.fy(i) * factor, mol.fz(i) * factor) 
+
+    return geom
