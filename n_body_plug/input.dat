@@ -70,6 +70,7 @@ set {
 n_body_plug.run_n_body('b3lyp', n_body={'b3lyp': 2, 'bsse': 'ssfc'}, properties=['quadrupole'])
 
 
+
 # generated input files should also have the following
 # (automatically added as of commit #2538754)
 #with open('data.json', 'w') as dumpf:
