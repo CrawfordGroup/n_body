@@ -1313,9 +1313,10 @@ def reorder_g09_rotations(optrot, db, omega=None):
 #    else:
 #        units = 'au' #default units
     # just working with units in nm for now
+    # last entry is always the units
     if 'omega' in db:
         omega_list = db['omega']
-        units = 'nm'
+        units = omega_list.pop()
 
     
     # Omega order contains a list of numbers for keeping track of the
