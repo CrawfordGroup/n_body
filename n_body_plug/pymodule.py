@@ -307,7 +307,9 @@ def run_n_body(name, **kwargs):
         for method in db['methods'].keys():
             #### NOTE: dft_methods is defunct #####
 #            if method in n_body.dft_methods:
-            if method == 'b3lyp': 
+#                outname = 'input.log'
+#                complete_message = 'Normal termination of Gaussian'
+            if (method == 'b3lyp'):
                 outname = 'input.log'
                 complete_message = 'Normal termination of Gaussian'
                 error_message = 'Error termination'
@@ -364,12 +366,15 @@ def run_n_body(name, **kwargs):
                 num_fin = db[method][field]['num_jobs_complete']
                 tot_num = db[method][field]['total_num_jobs']
                 print('{}/{} {}-body jobs finished'.format(num_fin,tot_num,field))
-                if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
+#                if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
 #                    if method in n_body.dft_methods:
 #                        n_body.harvest_g09(db,method,field)
+#                    if (method == 'b3lyp'):
+#                        print('Gotta harvest that b3lyp data')
+#                        n_body.harvest_g09(db,method,field)
 #                    else:
-                    if method != 'b3lyp':
-                        n_body.harvest_data(db,method,field)
+#                        print('Gotta harvest that cc2 data')
+#                        n_body.harvest_data(db,method,field)
 #            for field in db[method]['farm']:
 #                if isinstance(field, int):
 #                    n_body.cook_data(db,method,field)
