@@ -1224,12 +1224,15 @@ def harvest_cc_energy(db,method,n):
 def harvest_g09_scf_energy(db,method,n):
     body = n_body_dir(n)
     for job in db[method][n]['job_status']:
-        with open('{}/{}/{}/input.log'.format(method,body,job)) as outfile:
+        with open('{}/{}/{}/Test.FChk'.format(method,body,job)) as outfile:
             for line in outfile:
-                if 'SCF Done:' in line:
-                    (i,i,i,i, energy, i,i,i,i) = line.split()
-                    db[method][n]['scf_energy']['raw_data'].update({job:
-                                                                    [float(energy)]})
+                if 'SCF Energy' in line:
+                    (i, i, i, energy) = line.split()
+                    db[method][n]['scf_energy']['raw_data'].update({job:float(energy)})
+#                if 'SCF Done:' in line:
+#                    (i,i,i,i, energy, i,i,i,i) = line.split()
+#                    db[method][n]['scf_energy']['raw_data'].update({job:
+#                                                                    [float(energy)]})
 
 def harvest_g09_scf_dipole(db,method,n):
     body = n_body_dir(n)
