@@ -1236,18 +1236,26 @@ def harvest_g09_scf_energy(db,method,n):
 
 def harvest_g09_scf_dipole(db,method,n):
     body = n_body_dir(n)
+    # FChk stores dipole moment in AU, convert to Debye
+    factor = psi4.constants.dipmom_au2debye
     for job in db[method][n]['job_status']:
         get_next = False
-        with open('{}/{}/{}/input.log'.format(method,body,job)) as outfile:
+        with open('{}/{}/{}/Test.FChk'.format(method,body,job)) as outfile:
             for line in outfile:
                 if get_next:
-                    # total dipole moment is discarded as n-body using magnitudes is meaningless
-                    (x,x_val,y,y_val,z,z_val,tot,tot_val) = line.split()
-                    db[method][n]['scf_dipole']['raw_data'].update({job:
-                                    [float(x_val),float(y_val),float(z_val)]})
+                    (x, y, z) = line.split()
+                    db[method][n]['scf_dipole']['raw_data'].update({job:[float(x)*factor,float(y)*factor,float(z)*factor]})
                     get_next = False
-                if 'Dipole moment' in line:
+                if 'Dipole Moment' in line:
                     get_next = True
+#                if get_next:
+#                    # total dipole moment is discarded as n-body using magnitudes is meaningless
+#                    (x,x_val,y,y_val,z,z_val,tot,tot_val) = line.split()
+#                    db[method][n]['scf_dipole']['raw_data'].update({job:
+#                                    [float(x_val),float(y_val),float(z_val)]})
+#                    get_next = False
+#                if 'Dipole moment' in line:
+#                    get_next = True
 
 
 def harvest_g09_quadrupole(db,method,n):
