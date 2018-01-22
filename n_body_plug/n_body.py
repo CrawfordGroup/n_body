@@ -136,6 +136,9 @@ def extend_database(database, kwargs):
         # Assume we'll have scf energy and dipole
         # TODO: check dft energy printing and extend this
         database[method]['results'] = ['scf_energy','scf_dipole']
+        # DFT methods
+        if method == 'b3lyp':
+            database[method]['results'].append('quadrupole')
         # Add correlation energy
         # Coupled Cluster methods
         if method in ['cc2','ccsd','cc3','eom-cc2','eom-ccsd']:
@@ -1259,23 +1262,38 @@ def harvest_g09_scf_dipole(db,method,n):
 
 
 def harvest_g09_quadrupole(db,method,n):
+    # ONLY HARVESTING THE TRACELESS QUADRUPOLE MOMENT!
     body = n_body_dir(n)
+    # Convert AU to Debye-Angstrom
+    factor = psi4.constants.dipmom_au2debye * psi4.constants.bohr2angstroms
     for job in db[method][n]['job_status']:
         get_next = 0
-        with open('{}/{}/{}/input.log'.format(method,body,job),'r') as outfile:
+        with open('{}/{}/{}/Test.FChk'.format(method,body,job),'r') as outfile:
             for line in outfile:
                 if get_next == 1:
-                    (xx, xx_val, yy, yy_val, zz, zz_val) = line.split()
-                    get_next = 2
+                    (xx, yy, zz, xy, xz) = line.split()
+                    get_next=2
                     continue
                 if get_next == 2:
-                    (xy, xy_val, xz, xz_val, yz_val, yz_val) = line.split()
-                    db[method][n]['quadrupole']['raw_data'].update({job: 
-                                [float(xx_val), float(yy_val), float(zz_val),
-                                 float(xy_val), float(xz_val), float(yz_val)]})
+                    yz = line
+                    db[method][n]['quadrupole']['raw_data'].update({job:[float(xx)*factor,float(yy)*factor,float(zz)*factor,float(xy)*factor,float(xz)*factor,float(yz)*factor]})
+#                    db[method][n]['quadrupole']['raw_data'].update({job:[float(xx)*factor,float(yy)*factor,float(zz)*factor,float(xy)*factor,float(xz)*factor,float(yz)*factor]})
                     get_next = 0
-                if 'Traceless Quadrupole moment' in line:
+                    
+                if 'Quadrupole Moment' in line:
                     get_next = 1
+#                if get_next == 1:
+#                    (xx, xx_val, yy, yy_val, zz, zz_val) = line.split()
+#                    get_next = 2
+#                    continue
+#                if get_next == 2:
+#                    (xy, xy_val, xz, xz_val, yz_val, yz_val) = line.split()
+#                    db[method][n]['quadrupole']['raw_data'].update({job: 
+#                                [float(xx_val), float(yy_val), float(zz_val),
+#                                 float(xy_val), float(xz_val), float(yz_val)]})
+#                    get_next = 0
+#                if 'Traceless Quadrupole moment' in line:
+#                    get_next = 1
 
 def harvest_g09_rotation(db,method,n):
     body = n_body_dir(n)
