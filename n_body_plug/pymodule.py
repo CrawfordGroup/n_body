@@ -249,7 +249,8 @@ def run_n_body(name, **kwargs):
                             db[method][n]['job_status'].update({n_body.ghost_dir(indexes[k],ghost):
                                                                         'not_started'})
                             # Calculate molecular weight
-                            totmass = sum(((cluster.mass(i) if cluster.Z(i) else 0.) for i in range(cluster.natom())))
+                            totalmass = sum(mol2.mass(i) for i in range(mol2.natom()) if mol2.Z(i))
+                            totmass = sum(cluster.mass(i) for i in range(cluster.natom()) if cluster.Z(i))
                             db[method][n]['MW'].update({n_body.ghost_dir(indexes[k],ghost):totmass})
                             # Reactivate fragments for next round
                             cluster.set_active_fragments(list(ghost))
@@ -277,7 +278,7 @@ def run_n_body(name, **kwargs):
                             db[method][n]['total_num_jobs'] = len(list(itertools.combinations(range(0,n),n_real))) * len(clusters)
                             db[method][n]['job_status'].update({n_body.ghost_dir(indexes[k],ghost):
                                                                         'not_started'})
-                            totmass = sum(((cluster.mass(i) if cluster.Z(i) else 0.) for i in range(cluster.natom())))
+                            totmass = sum(cluster.mass(i) for i in range(cluster.natom()) if cluster.Z(i))
                             db[method][n]['MW'].update({n_body.ghost_dir(indexes[k],ghost):totmass})
                             # Reactivate fragments for next round
                             cluster.set_active_fragments(list(ghost))
@@ -294,7 +295,7 @@ def run_n_body(name, **kwargs):
                         # Update database job_status dict
                         db[method][n]['job_status'].update({n_body.cluster_dir(indexes[k]):
                                                                        'not_started'})
-                        totmass = sum(((cluster.mass(i) if cluster.Z(i) else 0.) for i in range(cluster.natom())))
+                        totmass = sum(cluster.mass(i) for i in range(cluster.natom()) if cluster.Z(i))
                         db[method][n]['MW'].update({n_body.cluster_dir(indexes[k]):totmass})
         # Check for zero jobs (happens occasionally due to cutoff)
         for method in db['methods']:
