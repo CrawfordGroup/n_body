@@ -29,6 +29,9 @@
 #                  '1'      : 'not_started', #No output file (output.dat) present
 #                  '1_2'    : 'running', #No 'PSI4 exiting successfully' in output
 #                  '1_2_3'  : 'complete' #'PSI4 exiting successfully' in output
+#            'MW' = { #OrderedDict of job molecular weights in g/mol
+#                # job_id # : # molecular weight#
+#                  '1'      : 12
 #            }
 #        }
 #    }
@@ -176,6 +179,7 @@ def extend_database(database, kwargs):
             database[method][field]['num_jobs_complete'] = 0
             database[method][field]['total_num_jobs']    = 0
             database[method][field]['job_status'] = collections.OrderedDict()
+            database[method][field]['MW'] = collections.OrderedDict()
             for result in database[method]['results']:
                 database[method][field][result] = collections.OrderedDict()
                 # @correction contains the sum of the cooked_data
@@ -1286,40 +1290,42 @@ def harvest_g09_quadrupole(db,method,n):
 def harvest_g09_rotation(db,method,n):
     body = n_body_dir(n)
     for job in db[method][n]['job_status']:
-        print(job)
         optrot = []
-        with open('{}/{}/{}/input.log'.format(method,body,job)) as outfile:
-            for line in outfile:
-                # Assume specific rotations are presented in descending order in
-                # terms of wavelength in nm, no matter the user specified
-                # order.
-                if '[Alpha]' in line:
-                    try:
-                        (i,i,i,i,i,i,i,i,i,i,val,i) = line.split()
-                        optrot.append(float(val))
-                    # if values are too large there is no space between = and result
-                    except ValueError:
-                        try:
-                            (i,i,i,i,i,i,i,i,i,val,i) = line.split()
-                            optrot.append(float(val[1:]))
-                        except:
-                            optrot.append(0.00)
-                            print('There has been an overflow in the optical rotation data and they are now meaningless after {}-body.'.format(n))
+#        for omega in db[method][n]['rotation_tensor']['raw_data'][job]:
+#            rot = np.trace
+        
+#        with open('{}/{}/{}/input.log'.format(method,body,job)) as outfile:
+#            for line in outfile:
+#                # Assume specific rotations are presented in descending order in
+#                # terms of wavelength in nm, no matter the user specified
+#                # order.
+#                if '[Alpha]' in line:
+#                    try:
+#                        (i,i,i,i,i,i,i,i,i,i,val,i) = line.split()
+#                        optrot.append(float(val))
+#                    # if values are too large there is no space between = and result
+#                    except ValueError:
+#                        try:
+#                            (i,i,i,i,i,i,i,i,i,val,i) = line.split()
+#                            optrot.append(float(val[1:]))
+#                        except:
+#                            optrot.append(0.00)
+#                            print('There has been an overflow in the optical rotation data and they are now meaningless after {}-body.'.format(n))
         # Resort the rotations from descending wavelength (nm) order to user
         # specified order
 #        optrot = reorder_g09_rotations(optrot, db)
 
         # Add list of rotations onto database entry
-        print("Got the rotations! We found: {} for job {}".format(optrot, job))
-        db[method][n]['rotation']['raw_data'].update({job: optrot})
+#        print("Got the rotations! We found: {} for job {}".format(optrot, job))
+#        db[method][n]['rotation']['raw_data'].update({job: optrot})
 
 def reorder_g09_rotations(optrot, db, omega=None):
-    # g09 specific rotations are output in order of wavelength
+    '''# g09 specific rotations are output in order of wavelength
     # ascending/descending depending on the units
     # Descending:  NM
     # Ascending: AU, EV, HZ 
     # No matter the user specified order. Here we're resorting them to
-    # be in the same order as specified by the user.
+    # be in the same order as specified by the user.'''
 
     # Get user specified omega list
 #    if not omega:
@@ -1421,21 +1427,11 @@ def harvest_g09_rotation_tensor(db, method, n):
 #            tensors[omega,job] = vals[i].reshape(3,3)
             tensors[omega] = vals[i].reshape(3,3)
             i+=1
-        db[method][n]['rotation_tensor']['raw_data'].update({job: tensors})
-            
-#        print("Here's the values for job {}: \n{}".format(job,ten_vals))
-    print("Here's the values for n = {}: \n{}".format(n,tensors))
-            
-#    # Gaussian outputs these tensors twice
-#    for job in db[method][n]['job_status']:
-#        tensors = []
-#        with open('{}/{}/{}/input.log'.format(method,body,job)) as outfile:
-#            for k in range(1, n_omega+1):
-#                tensors.extend(grab_g09_matrix(outfile, 'Optical Rotation '
-#                                        'Tensor frequency  {}'.format(k), 3))
 #        # Resort the tensors to user specified order
 #        tensors = reorder_g09_rotations(tensors)
-#        db[method][n]['rotation_tensor']['raw_data'].update({job: tensors})
+        print("Here's the values for job {}: \n{}".format(job,ten_vals))
+        db[method][n]['rotation_tensor']['raw_data'].update({job: tensors})
+            
 
 def harvest_g09_polarizability(db, method, n):
     body = n_body_dir(n)
@@ -1936,16 +1932,9 @@ def plant(cluster, db, kwargs, method, directory):
 #    # Otherwise assume method is a wfn method. All methods were
 #    # checked earlier for validity.
     else:
-##### NOTE: the rest of this function was indented under the "else" #####
-##### statement, but I'm skipping DFT for now. #####
         infile = open('{}/input.dat'.format(directory),'w')
         infile.write('# This is a psi4 input file auto-generated for an'
                  ' n_body {} job.\n'.format(func.__name__))
-##### NOTE: The following commented lines are Taylor's old way of #####
-##### generating inputs. The new code is largely based on the ROA #####
-##### code roa.py #####
-#    infile.write(proc.basic_molecule_for_input(cluster))
-#    infile.write('\n\n')
         mol_open = 'molecule ' + cluster.name() + ' {\n'
         mol_close = '}'
         infile.write("{}{}{}".format(mol_open,cluster.create_psi4_string_from_molecule(),mol_close))

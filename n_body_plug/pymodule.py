@@ -225,6 +225,7 @@ def run_n_body(name, **kwargs):
                 for k in range(len(clusters)):
                     psi4.activate(clusters[k])
                     cluster = psi4.core.get_active_molecule()
+#                    db[method][n]['MW'][job] = value
                     ### Set-up things for input generation
                     # Get list of combinations to ghost
                     # MBCP 
@@ -247,6 +248,9 @@ def run_n_body(name, **kwargs):
                             db[method][n]['total_num_jobs'] = len(mbcp) * len(clusters)
                             db[method][n]['job_status'].update({n_body.ghost_dir(indexes[k],ghost):
                                                                         'not_started'})
+                            # Calculate molecular weight
+                            totmass = sum(((cluster.mass(i) if cluster.Z(i) else 0.) for i in range(cluster.natom())))
+                            db[method][n]['MW'].update({n_body.ghost_dir(indexes[k],ghost):totmass})
                             # Reactivate fragments for next round
                             cluster.set_active_fragments(list(ghost))
                             cluster.update_geometry()
@@ -273,20 +277,25 @@ def run_n_body(name, **kwargs):
                             db[method][n]['total_num_jobs'] = len(list(itertools.combinations(range(0,n),n_real))) * len(clusters)
                             db[method][n]['job_status'].update({n_body.ghost_dir(indexes[k],ghost):
                                                                         'not_started'})
+                            totmass = sum(((cluster.mass(i) if cluster.Z(i) else 0.) for i in range(cluster.natom())))
+                            db[method][n]['MW'].update({n_body.ghost_dir(indexes[k],ghost):totmass})
                             # Reactivate fragments for next round
                             cluster.set_active_fragments(list(ghost))
                             cluster.update_geometry()
 
-
-                    cluster.set_name('{}_{}'.format(molecule.name(),n_body.cluster_dir(indexes[k])))
-                    #molecule.set_name('{}_{}'.format(molecule.name(),cluster_dir(indexes[k])))
-                    directory = '{}/{}/{}'.format(method,n_body.n_body_dir(n),n_body.cluster_dir(indexes[k]))
-                    n_body.plant(cluster, db, kwargs, method, directory)
-
-
-                    # Update database job_status dict
-                    db[method][n]['job_status'].update({n_body.cluster_dir(indexes[k]):
-                                                                   'not_started'})
+                    # SSFC or no BSSE
+                    else:
+                        cluster.set_name('{}_{}'.format(molecule.name(),n_body.cluster_dir(indexes[k])))
+                        #molecule.set_name('{}_{}'.format(molecule.name(),cluster_dir(indexes[k])))
+                        directory = '{}/{}/{}'.format(method,n_body.n_body_dir(n),n_body.cluster_dir(indexes[k]))
+                        n_body.plant(cluster, db, kwargs, method, directory)
+    
+    
+                        # Update database job_status dict
+                        db[method][n]['job_status'].update({n_body.cluster_dir(indexes[k]):
+                                                                       'not_started'})
+                        totmass = sum(((cluster.mass(i) if cluster.Z(i) else 0.) for i in range(cluster.natom())))
+                        db[method][n]['MW'].update({n_body.cluster_dir(indexes[k]):totmass})
         # Check for zero jobs (happens occasionally due to cutoff)
         for method in db['methods']:
             for n in range(1, db[method]['n_body_max']+1):
