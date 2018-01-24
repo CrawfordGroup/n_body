@@ -151,13 +151,14 @@ def extend_database(database, kwargs):
         # OTHER CORRELATED METHODS
         # Add properties
         if 'properties' in kwargs:
-        # NOTE: DISABLED MOST TENSOR HARVESTING FOR NOW
+        # NOTE: DISABLED TENSOR HARVESTING FOR NOW
+        # BUT ROTATIONS FOR G09 GET THEM AUTOMATICALLY
             if 'polarizability' in kwargs['properties']:
                 database[method]['results'].append('polarizability')
 #                database[method]['results'].append('polarizability_tensor')
             if 'rotation' in kwargs['properties']:
                 database[method]['results'].append('rotation')
-                database[method]['results'].append('rotation_tensor')
+#                database[method]['results'].append('rotation_tensor')
             if 'quadrupole' in kwargs['properties']:
                 database[method]['results'].append('quadrupole')
             # Need roa also!
@@ -1288,6 +1289,19 @@ def harvest_g09_quadrupole(db,method,n):
 #                    get_next = 1
 
 def harvest_g09_rotation(db,method,n):
+    """Harvests g09 rotations. I have to extend the database manually here, so that
+        harvest_g09_rotation_tensor() doesn't get called multiple times."""
+    db[method]['results'].append('rotation_tensor')
+    db[method][n]['rotation_tensor'] = collections.OrderedDict()
+    db[method][n]['rotation_tensor']['correction'] = 0
+    db[method][n]['rotation_tensor']['rotation_tensor'] = 0
+    db[method][n]['rotation_tensor']['vmfc_correction'] = 0
+    db[method][n]['rotation_tensor']['vmfc_approximation'] = 0
+    db[method][n]['rotation_tensor']['mbcp_correction'] = 0
+    db[method][n]['rotation_tensor']['mbcp_approximation'] = 0
+    db[method][n]['rotation_tensor']['raw_data'] = collections.OrderedDict()
+    db[method][n]['rotation_tensor']['cooked_data'] = collections.OrderedDict()
+    harvest_g09_rotation_tensor(db,method,n)
     body = n_body_dir(n)
     for job in db[method][n]['job_status']:
         optrot = []
@@ -1392,12 +1406,9 @@ def reorder_g09_rotations(optrot, db, omega=None):
 def harvest_g09_rotation_tensor(db, method, n):
     print("Made it into rotation tensor function for {} body jobs.".format(n))
     body = n_body_dir(n)
-#    omega = psi4.get_global_option('OMEGA')
     # G09 ALWAYS prints rotation for each wavelength in DESCENDING order
     omega_dec = db['omega']
     omega_dec.sort(reverse=True)
-#    if len(omega) > 1:
-#        omega.pop()
     n_omega = len(omega_dec)
     # Gaussian prints every single value from each tensor in a row, 5 values per row
     n_rows = math.floor(9*n_omega/5)
@@ -1408,8 +1419,6 @@ def harvest_g09_rotation_tensor(db, method, n):
         ten_vals = []
         get_line = 0
         get_next = 0
-#        for omega in omega_dec:
-#            tensors[omega,job] = np.zeros((3,3))
         with open('{}/{}/{}/Test.FChk'.format(method,body,job)) as outfile:
             for line in outfile:
                 if (get_next == 1) & (get_line <= n_rows):
@@ -1424,8 +1433,7 @@ def harvest_g09_rotation_tensor(db, method, n):
         vals = np.split(vals, n_omega)
         i = 0
         for omega in omega_dec:
-#            tensors[omega,job] = vals[i].reshape(3,3)
-            tensors[omega] = vals[i].reshape(3,3)
+            tensors[omega] = vals[i].reshape(3,3).T
             i+=1
 #        # Resort the tensors to user specified order
 #        tensors = reorder_g09_rotations(tensors)
