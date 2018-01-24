@@ -54,12 +54,14 @@ import copy
 # driver no longer exists, see proc.py and procrouting folder
 #import atexit
 #import p4const
-#import math
+import math
 import os
 #import p4util
 #import re
 # need json for new output structure
 import json
+# need numpy for holding property tensors
+import numpy as np
 
 def clean_up(db):
     try:
@@ -146,9 +148,10 @@ def extend_database(database, kwargs):
         # OTHER CORRELATED METHODS
         # Add properties
         if 'properties' in kwargs:
+        # NOTE: DISABLED MOST TENSOR HARVESTING FOR NOW
             if 'polarizability' in kwargs['properties']:
                 database[method]['results'].append('polarizability')
-                database[method]['results'].append('polarizability_tensor')
+#                database[method]['results'].append('polarizability_tensor')
             if 'rotation' in kwargs['properties']:
                 database[method]['results'].append('rotation')
                 database[method]['results'].append('rotation_tensor')
@@ -1105,6 +1108,7 @@ def harvest_data(db,method,n):
 def harvest_g09(db,method,n):
     print('Harvesting g09...')
     for result in db[method]['results']:
+        print ("Harvesting {}".format(result))
         getattr(sys.modules[__name__],'harvest_g09_{}'.format(result))(db,method,n)
 
 def harvest_scf_energy_data(db,method,n):
@@ -1146,10 +1150,7 @@ def harvest_rotation_data(db,method,n):
     for job in db[method][n]['job_status']:
         with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
             jout = json.load(outfile)
-            # Only worrying about Modified Velocity Gauge data for now
-            # Need to fix psivars dict (called w/ core.get_variables(), 
-            # stored in output.json) to include ALL omegas, not just 
-            # the last one computed
+            # NOTE: Only worrying about Modified Velocity Gauge data for now
             for omega in db['omega']:
                 optrot = jout["{} SPECIFIC ROTATION (MVG) @ {}NM".format(name, omega)]
                 db[method][n]['rotation']['raw_data'][omega].update({job: optrot})
@@ -1232,10 +1233,6 @@ def harvest_g09_scf_energy(db,method,n):
                 if 'SCF Energy' in line:
                     (i, i, i, energy) = line.split()
                     db[method][n]['scf_energy']['raw_data'].update({job:float(energy)})
-#                if 'SCF Done:' in line:
-#                    (i,i,i,i, energy, i,i,i,i) = line.split()
-#                    db[method][n]['scf_energy']['raw_data'].update({job:
-#                                                                    [float(energy)]})
 
 def harvest_g09_scf_dipole(db,method,n):
     body = n_body_dir(n)
@@ -1251,14 +1248,6 @@ def harvest_g09_scf_dipole(db,method,n):
                     get_next = False
                 if 'Dipole Moment' in line:
                     get_next = True
-#                if get_next:
-#                    # total dipole moment is discarded as n-body using magnitudes is meaningless
-#                    (x,x_val,y,y_val,z,z_val,tot,tot_val) = line.split()
-#                    db[method][n]['scf_dipole']['raw_data'].update({job:
-#                                    [float(x_val),float(y_val),float(z_val)]})
-#                    get_next = False
-#                if 'Dipole moment' in line:
-#                    get_next = True
 
 
 def harvest_g09_quadrupole(db,method,n):
@@ -1277,7 +1266,6 @@ def harvest_g09_quadrupole(db,method,n):
                 if get_next == 2:
                     yz = line
                     db[method][n]['quadrupole']['raw_data'].update({job:[float(xx)*factor,float(yy)*factor,float(zz)*factor,float(xy)*factor,float(xz)*factor,float(yz)*factor]})
-#                    db[method][n]['quadrupole']['raw_data'].update({job:[float(xx)*factor,float(yy)*factor,float(zz)*factor,float(xy)*factor,float(xz)*factor,float(yz)*factor]})
                     get_next = 0
                     
                 if 'Quadrupole Moment' in line:
@@ -1319,9 +1307,10 @@ def harvest_g09_rotation(db,method,n):
                             print('There has been an overflow in the optical rotation data and they are now meaningless after {}-body.'.format(n))
         # Resort the rotations from descending wavelength (nm) order to user
         # specified order
-        optrot = reorder_g09_rotations(optrot, db)
+#        optrot = reorder_g09_rotations(optrot, db)
 
         # Add list of rotations onto database entry
+        print("Got the rotations! We found: {} for job {}".format(optrot, job))
         db[method][n]['rotation']['raw_data'].update({job: optrot})
 
 def reorder_g09_rotations(optrot, db, omega=None):
@@ -1395,21 +1384,58 @@ def reorder_g09_rotations(optrot, db, omega=None):
 
 
 def harvest_g09_rotation_tensor(db, method, n):
+    print("Made it into rotation tensor function for {} body jobs.".format(n))
     body = n_body_dir(n)
-    omega = psi4.get_global_option('OMEGA')
-    if len(omega) > 1:
-        omega.pop()
-    n_omega = len(omega)
-    # Gaussian outputs these tensors twice
+#    omega = psi4.get_global_option('OMEGA')
+    # G09 ALWAYS prints rotation for each wavelength in DESCENDING order
+    omega_dec = db['omega']
+    omega_dec.sort(reverse=True)
+#    if len(omega) > 1:
+#        omega.pop()
+    n_omega = len(omega_dec)
+    # Gaussian prints every single value from each tensor in a row, 5 values per row
+    n_rows = math.floor(9*n_omega/5)
     for job in db[method][n]['job_status']:
-        tensors = []
-        with open('{}/{}/{}/input.log'.format(method,body,job)) as outfile:
-            for k in range(1, n_omega+1):
-                tensors.extend(grab_g09_matrix(outfile, 'Optical Rotation '
-                                        'Tensor frequency  {}'.format(k), 3))
-        # Resort the tensors to user specified order
-        tensors = reorder_g09_rotations(tensors)
+        # Need a dictionary to hold the different tensors
+        tensors = {}       
+        # Need to cram all of the values into a 1D list
+        ten_vals = []
+        get_line = 0
+        get_next = 0
+#        for omega in omega_dec:
+#            tensors[omega,job] = np.zeros((3,3))
+        with open('{}/{}/{}/Test.FChk'.format(method,body,job)) as outfile:
+            for line in outfile:
+                if (get_next == 1) & (get_line <= n_rows):
+                    ten_vals += line.split()
+                    get_line += 1
+                if 'FD Optical Rotation Tensor' in line:
+                    get_next = 1
+        
+        for i in range(0,len(ten_vals)):
+            ten_vals[i] = float(ten_vals[i])
+        vals = np.asarray(ten_vals)
+        vals = np.split(vals, n_omega)
+        i = 0
+        for omega in omega_dec:
+#            tensors[omega,job] = vals[i].reshape(3,3)
+            tensors[omega] = vals[i].reshape(3,3)
+            i+=1
         db[method][n]['rotation_tensor']['raw_data'].update({job: tensors})
+            
+#        print("Here's the values for job {}: \n{}".format(job,ten_vals))
+    print("Here's the values for n = {}: \n{}".format(n,tensors))
+            
+#    # Gaussian outputs these tensors twice
+#    for job in db[method][n]['job_status']:
+#        tensors = []
+#        with open('{}/{}/{}/input.log'.format(method,body,job)) as outfile:
+#            for k in range(1, n_omega+1):
+#                tensors.extend(grab_g09_matrix(outfile, 'Optical Rotation '
+#                                        'Tensor frequency  {}'.format(k), 3))
+#        # Resort the tensors to user specified order
+#        tensors = reorder_g09_rotations(tensors)
+#        db[method][n]['rotation_tensor']['raw_data'].update({job: tensors})
 
 def harvest_g09_polarizability(db, method, n):
     body = n_body_dir(n)
