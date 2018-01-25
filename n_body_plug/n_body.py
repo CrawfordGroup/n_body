@@ -1533,8 +1533,9 @@ def cook_data(db, method, n):
         # what data quantities are available in a smart way.
 #        correction = [0.0 for i in
 #                      range(len(cooked_data[n].itervalues().next()))]
-        correction = [0.0 for i in
-                      range(len(iter(cooked_data[n].values()).next()))]
+#        correction = [0.0 for i in
+#                      range(len(iter(cooked_data[n].values()).next()))]
+        correction = [0.0 for i in range(len(next(iter(cooked_data[n].values()))))]
         # Add up all contributions to current correction
         for key,val in cooked_data[n].items():
             correction = [x+y for x,y in zip(correction,val)]
