@@ -225,6 +225,7 @@ def run_n_body(name, **kwargs):
                 for k in range(len(clusters)):
                     psi4.activate(clusters[k])
                     cluster = psi4.core.get_active_molecule()
+#                    db[method][n]['MW'][job] = value
                     ### Set-up things for input generation
                     # Get list of combinations to ghost
                     # MBCP 
@@ -247,6 +248,10 @@ def run_n_body(name, **kwargs):
                             db[method][n]['total_num_jobs'] = len(mbcp) * len(clusters)
                             db[method][n]['job_status'].update({n_body.ghost_dir(indexes[k],ghost):
                                                                         'not_started'})
+                            # Calculate molecular weight
+                            totalmass = sum(mol2.mass(i) for i in range(mol2.natom()) if mol2.Z(i))
+                            totmass = sum(cluster.mass(i) for i in range(cluster.natom()) if cluster.Z(i))
+                            db[method][n]['MW'].update({n_body.ghost_dir(indexes[k],ghost):totmass})
                             # Reactivate fragments for next round
                             cluster.set_active_fragments(list(ghost))
                             cluster.update_geometry()
@@ -273,20 +278,25 @@ def run_n_body(name, **kwargs):
                             db[method][n]['total_num_jobs'] = len(list(itertools.combinations(range(0,n),n_real))) * len(clusters)
                             db[method][n]['job_status'].update({n_body.ghost_dir(indexes[k],ghost):
                                                                         'not_started'})
+                            totmass = sum(cluster.mass(i) for i in range(cluster.natom()) if cluster.Z(i))
+                            db[method][n]['MW'].update({n_body.ghost_dir(indexes[k],ghost):totmass})
                             # Reactivate fragments for next round
                             cluster.set_active_fragments(list(ghost))
                             cluster.update_geometry()
 
-
-                    cluster.set_name('{}_{}'.format(molecule.name(),n_body.cluster_dir(indexes[k])))
-                    #molecule.set_name('{}_{}'.format(molecule.name(),cluster_dir(indexes[k])))
-                    directory = '{}/{}/{}'.format(method,n_body.n_body_dir(n),n_body.cluster_dir(indexes[k]))
-                    n_body.plant(cluster, db, kwargs, method, directory)
-
-
-                    # Update database job_status dict
-                    db[method][n]['job_status'].update({n_body.cluster_dir(indexes[k]):
-                                                                   'not_started'})
+                    # SSFC or no BSSE
+                    else:
+                        cluster.set_name('{}_{}'.format(molecule.name(),n_body.cluster_dir(indexes[k])))
+                        #molecule.set_name('{}_{}'.format(molecule.name(),cluster_dir(indexes[k])))
+                        directory = '{}/{}/{}'.format(method,n_body.n_body_dir(n),n_body.cluster_dir(indexes[k]))
+                        n_body.plant(cluster, db, kwargs, method, directory)
+    
+    
+                        # Update database job_status dict
+                        db[method][n]['job_status'].update({n_body.cluster_dir(indexes[k]):
+                                                                       'not_started'})
+                        totmass = sum(cluster.mass(i) for i in range(cluster.natom()) if cluster.Z(i))
+                        db[method][n]['MW'].update({n_body.cluster_dir(indexes[k]):totmass})
         # Check for zero jobs (happens occasionally due to cutoff)
         for method in db['methods']:
             for n in range(1, db[method]['n_body_max']+1):
@@ -366,15 +376,14 @@ def run_n_body(name, **kwargs):
                 num_fin = db[method][field]['num_jobs_complete']
                 tot_num = db[method][field]['total_num_jobs']
                 print('{}/{} {}-body jobs finished'.format(num_fin,tot_num,field))
-#                if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
+                if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
 #                    if method in n_body.dft_methods:
 #                        n_body.harvest_g09(db,method,field)
-#                    if (method == 'b3lyp'):
-#                        print('Gotta harvest that b3lyp data')
-#                        n_body.harvest_g09(db,method,field)
-#                    else:
-#                        print('Gotta harvest that cc2 data')
-#                        n_body.harvest_data(db,method,field)
+                    if (method == 'b3lyp'):
+                        print('Gotta harvest that b3lyp data')
+                        n_body.harvest_g09(db,method,field)
+                    else:
+                        n_body.harvest_data(db,method,field)
 #            for field in db[method]['farm']:
 #                if isinstance(field, int):
 #                    n_body.cook_data(db,method,field)

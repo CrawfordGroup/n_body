@@ -27,9 +27,9 @@ set {
   basis sto-3g
 }
 
-set n_body {
-  print 1
-}
+#set n_body {
+#  print 1
+#}
 
 set {
    gauge velocity 
@@ -51,12 +51,12 @@ set {
 
 # current running example of energy calculation
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 1})
-#n_body_plug.run_n_body('cc2', n_body={'cc2': 3})
+#n_body_plug.run_n_body('b3lyp', n_body={'b3lyp': 3})
 
 # current running examples of property calculations
 #n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['quadrupole'])
 #n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['polarizability'])
-#n_body_plug.run_n_body('cc2', n_body={'cc2':1}, properties=['rotation'])
+#n_body_plug.run_n_body('b3lyp', n_body={'b3lyp':3}, properties=['rotation'])
 
 # current running example for vmfc bsse calculations
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'vmfc'})
@@ -67,7 +67,7 @@ set {
 # current running example for ssfc bsse calculations
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'ssfc'}, properties=['quadrupole'])
 # gaussian integration is currently being fixed
-n_body_plug.run_n_body('b3lyp', n_body={'b3lyp': 2, 'bsse': 'ssfc'}, properties=['quadrupole'])
+n_body_plug.run_n_body('b3lyp', n_body={'b3lyp': 3, 'bsse': 'ssfc'}, properties=['rotation'])
 
 
 
