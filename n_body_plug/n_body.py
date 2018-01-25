@@ -1303,10 +1303,24 @@ def harvest_g09_rotation(db,method,n):
     db[method][n]['rotation_tensor']['cooked_data'] = collections.OrderedDict()
     harvest_g09_rotation_tensor(db,method,n)
     body = n_body_dir(n)
+    c = psi4.constants.c
+    h = psi4.constants.h
+    h2j = psi4.constants.hartree2J
+    Na = psi4.constants.na
+    me = psi4.constants.me
+    hbar = h / 2.0 / math.pi
+    prefactor = -72E6 * hbar**2 * Na / c**2 / me**2
+
     for job in db[method][n]['job_status']:
+        M = db[method][n]['MW'][job]
         optrot = []
-#        for omega in db[method][n]['rotation_tensor']['raw_data'][job]:
-#            rot = np.trace
+        for omega in db[method][n]['rotation_tensor']['raw_data'][job]:
+            w_h = c * h * 1E9 / h2j / omega
+            tr = np.trace(db[method][n]['rotation_tensor']['raw_data'][job][omega])
+            rot = prefactor * w_h * tr / M / 3.0
+            optrot.append(rot)
+        optrot = reorder_g09_rotations(optrot, db)
+        db[method][n]['rotation']['raw_data'].update({job: optrot})
         
 #        with open('{}/{}/{}/input.log'.format(method,body,job)) as outfile:
 #            for line in outfile:
@@ -1353,8 +1367,8 @@ def reorder_g09_rotations(optrot, db, omega=None):
     # just working with units in nm for now
     # last entry is always the units
     if 'omega' in db:
-        omega_list = db['omega']
-        units = omega_list.pop()
+        omega_list = copy.deepcopy(db['omega'])
+#        units = omega_list.pop()
 
     
     # Omega order contains a list of numbers for keeping track of the
@@ -1364,12 +1378,9 @@ def reorder_g09_rotations(optrot, db, omega=None):
         omega_order.append(n)
 
     # Zip omega with our order tracking list
-    temp = zip(omega_list, omega_order)
-    # sort the zipped list in terms of omega (ascending)
-    temp.sort()
-    if units.upper() == 'NM':
-        # Change it to descending
-        temp.reverse()
+    # sort the zipped list in terms of omega (descending, assuming NM)
+    temp = sorted(zip(omega_list, omega_order),reverse=True)
+
     # Unzip the sorted lists @omega_descending contains the wavelengths in
     # descending order @omega_order contains the reordered list of numbers
     # allowing us to get back to user entered order
@@ -1386,9 +1397,8 @@ def reorder_g09_rotations(optrot, db, omega=None):
             temp_data.append(tensor)
         optrot = temp_data
     # Zip together our list of the original order and the collected rotations
-    temp = zip(omega_order, optrot)
     # Sort the zipped list according to omega_order
-    temp.sort()
+    temp = sorted(zip(omega_order, optrot))
     # Unzip to get the rotations in the user specified order
     junk, optrot = zip(*temp)
     if isinstance(optrot[0],list):
@@ -1404,10 +1414,9 @@ def reorder_g09_rotations(optrot, db, omega=None):
 
 
 def harvest_g09_rotation_tensor(db, method, n):
-    print("Made it into rotation tensor function for {} body jobs.".format(n))
     body = n_body_dir(n)
     # G09 ALWAYS prints rotation for each wavelength in DESCENDING order
-    omega_dec = db['omega']
+    omega_dec = copy.deepcopy(db['omega'])
     omega_dec.sort(reverse=True)
     n_omega = len(omega_dec)
     # Gaussian prints every single value from each tensor in a row, 5 values per row
@@ -1437,7 +1446,6 @@ def harvest_g09_rotation_tensor(db, method, n):
             i+=1
 #        # Resort the tensors to user specified order
 #        tensors = reorder_g09_rotations(tensors)
-        print("Here's the values for job {}: \n{}".format(job,ten_vals))
         db[method][n]['rotation_tensor']['raw_data'].update({job: tensors})
             
 

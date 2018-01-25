@@ -380,7 +380,6 @@ def run_n_body(name, **kwargs):
 #                    if method in n_body.dft_methods:
 #                        n_body.harvest_g09(db,method,field)
                     if (method == 'b3lyp'):
-                        print('Gotta harvest that b3lyp data')
                         n_body.harvest_g09(db,method,field)
                     else:
                         n_body.harvest_data(db,method,field)
