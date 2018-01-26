@@ -1317,7 +1317,8 @@ def harvest_g09_rotation(db,method,n):
         for omega in db[method][n]['rotation_tensor']['raw_data'][job]:
             w_h = c * h * 1E9 / h2j / omega
             tr = np.trace(db[method][n]['rotation_tensor']['raw_data'][job][omega])
-            rot = prefactor * w_h * tr / M / 3.0
+            # Multiply by additional omega to account for different mu operator
+            rot = prefactor * w_h * tr / M / 3.0 * w_h
             optrot.append(rot)
         optrot = reorder_g09_rotations(optrot, db)
         db[method][n]['rotation']['raw_data'].update({job: optrot})
