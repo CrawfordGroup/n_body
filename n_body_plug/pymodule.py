@@ -385,7 +385,8 @@ def run_n_body(name, **kwargs):
                     else:
                         n_body.harvest_data(db,method,field)
             for field in db[method]['farm']:
-                if isinstance(field, int):
+                if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
+#                if isinstance(field, int):
                     n_body.cook_data(db,method,field)
 #                    #if db['bsse'] == 'vmfc' and field > 1:
 #                    #    n_body.vmfc_cook(db, method, field)
