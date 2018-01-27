@@ -1542,8 +1542,8 @@ def cook_data(db, method, n):
 #                      range(len(iter(cooked_data[n].values()).next()))]
 #        print("scf_energy database entry 2:\n{}".format(db[method][n]['scf_energy']['raw_data']))
 
-#        correction = [0.0 for i in range(len(next(iter(cooked_data[n].values()))))]
-        correction = [0.0 for i in range(len(cooked_data[n].values()))]
+        correction = [0.0 for i in range(len(next(iter(cooked_data[n].values()))))]
+#        correction = [0.0 for i in range(len(cooked_data[n].values()))]
         # Add up all contributions to current correction
         for key,val in cooked_data[n].items():
             correction = [x+y for x,y in zip(correction,val)]
