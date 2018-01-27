@@ -278,6 +278,7 @@ def run_n_body(name, **kwargs):
                             db[method][n]['total_num_jobs'] = len(list(itertools.combinations(range(0,n),n_real))) * len(clusters)
                             db[method][n]['job_status'].update({n_body.ghost_dir(indexes[k],ghost):
                                                                         'not_started'})
+                            # Calculate molecular weight
                             totmass = sum(cluster.mass(i) for i in range(cluster.natom()) if cluster.Z(i))
                             db[method][n]['MW'].update({n_body.ghost_dir(indexes[k],ghost):totmass})
                             # Reactivate fragments for next round
@@ -291,10 +292,10 @@ def run_n_body(name, **kwargs):
                         directory = '{}/{}/{}'.format(method,n_body.n_body_dir(n),n_body.cluster_dir(indexes[k]))
                         n_body.plant(cluster, db, kwargs, method, directory)
     
-    
                         # Update database job_status dict
                         db[method][n]['job_status'].update({n_body.cluster_dir(indexes[k]):
                                                                        'not_started'})
+                        # Calculate molecular weight
                         totmass = sum(cluster.mass(i) for i in range(cluster.natom()) if cluster.Z(i))
                         db[method][n]['MW'].update({n_body.cluster_dir(indexes[k]):totmass})
         # Check for zero jobs (happens occasionally due to cutoff)
@@ -383,9 +384,9 @@ def run_n_body(name, **kwargs):
                         n_body.harvest_g09(db,method,field)
                     else:
                         n_body.harvest_data(db,method,field)
-#            for field in db[method]['farm']:
-#                if isinstance(field, int):
-#                    n_body.cook_data(db,method,field)
+            for field in db[method]['farm']:
+                if isinstance(field, int):
+                    n_body.cook_data(db,method,field)
 #                    #if db['bsse'] == 'vmfc' and field > 1:
 #                    #    n_body.vmfc_cook(db, method, field)
 #                    #    n_body.mbcp_cook(db, method, field)

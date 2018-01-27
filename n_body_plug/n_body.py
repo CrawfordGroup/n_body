@@ -1122,7 +1122,7 @@ def harvest_scf_energy_data(db,method,n):
         with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
             jout = json.load(outfile)
             energy = jout["SCF TOTAL ENERGY"]
-            db[method][n]['scf_energy']['raw_data'].update({job:energy})
+            db[method][n]['scf_energy']['raw_data'].update({job:[energy]})
 
 def harvest_scf_dipole_data(db,method,n):
     body = n_body_dir(n)
@@ -1237,7 +1237,7 @@ def harvest_g09_scf_energy(db,method,n):
             for line in outfile:
                 if 'SCF Energy' in line:
                     (i, i, i, energy) = line.split()
-                    db[method][n]['scf_energy']['raw_data'].update({job:float(energy)})
+                    db[method][n]['scf_energy']['raw_data'].update({job:[float(energy)]})
 
 def harvest_g09_scf_dipole(db,method,n):
     body = n_body_dir(n)
@@ -1495,6 +1495,7 @@ def harvest_g09_polarizability_tensor(db, method, n):
         db[method][n]['polarizability_tensor']['raw_data'].update({job: tensors})
 
 def cook_data(db, method, n):
+    """ Cook all no-BSSE or SSFC data """
     # Automatic cooking requires all result data be stored as lists in the
     # database. Even if the result is a single number (i.e. energies)
     cooked_data = collections.OrderedDict()
@@ -1502,18 +1503,15 @@ def cook_data(db, method, n):
     for result in db[method]['results']:
         # Read in all cooked_data for m < n
         for m in range(1, n):
-            cooked_data[m] = db[method][m][result]['cooked_data']
+            cooked_data[m] = copy.deepcopy(db[method][m][result]['cooked_data'])
 
         # Read in raw data for m
         # Eventually should just read this in to cooked_data[n]
-        #cooked_data[n] = db[method][n][result]['raw_data']
-        raw_data[n] = db[method][n][result]['raw_data']
+        raw_data[n] = copy.deepcopy(db[method][n][result]['raw_data'])
 
         # Cook n data
         cooked_data[n] = copy.deepcopy(raw_data[n])
         for m in range(1,n):
-            print(result)
-            print(cooked_data[m])
             for n_key in cooked_data[n]:
                 for m_key in cooked_data[m]:
                     m_set = set(m_key.split('_'))
@@ -1534,8 +1532,10 @@ def cook_data(db, method, n):
         # what data quantities are available in a smart way.
 #        correction = [0.0 for i in
 #                      range(len(cooked_data[n].itervalues().next()))]
-        correction = [0.0 for i in
-                      range(len(iter(cooked_data[n].values()).next()))]
+#        correction = [0.0 for i in
+#                      range(len(iter(cooked_data[n].values()).next()))]
+
+        correction = [0.0 for i in range(len(next(iter(cooked_data[n].values()))))]
         # Add up all contributions to current correction
         for key,val in cooked_data[n].items():
             correction = [x+y for x,y in zip(correction,val)]
