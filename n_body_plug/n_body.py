@@ -1494,30 +1494,23 @@ def harvest_g09_polarizability_tensor(db, method, n):
         db[method][n]['polarizability_tensor']['raw_data'].update({job: tensors})
 
 def cook_data(db, method, n):
+    """ Cook all no-BSSE or SSFC data """
     # Automatic cooking requires all result data be stored as lists in the
     # database. Even if the result is a single number (i.e. energies)
-#    print("Made it into data cooking for {}-body jobs".format(n))
-#    print("scf_energy database entry:\n{}".format(db[method][n]['scf_energy']['raw_data']))
     cooked_data = collections.OrderedDict()
     raw_data    = collections.OrderedDict()
     for result in db[method]['results']:
-#        print("Beginning cook for {}".format(result))
         # Read in all cooked_data for m < n
         for m in range(1, n):
-#            print("How did I get here?")
             cooked_data[m] = copy.deepcopy(db[method][m][result]['cooked_data'])
 
         # Read in raw data for m
         # Eventually should just read this in to cooked_data[n]
-        #cooked_data[n] = db[method][n][result]['raw_data']
         raw_data[n] = copy.deepcopy(db[method][n][result]['raw_data'])
 
         # Cook n data
         cooked_data[n] = copy.deepcopy(raw_data[n])
         for m in range(1,n):
-#            print("Seriously, how did I get here?")
-#            print(result)
-#            print(cooked_data[m])
             for n_key in cooked_data[n]:
                 for m_key in cooked_data[m]:
                     m_set = set(m_key.split('_'))
@@ -1540,10 +1533,8 @@ def cook_data(db, method, n):
 #                      range(len(cooked_data[n].itervalues().next()))]
 #        correction = [0.0 for i in
 #                      range(len(iter(cooked_data[n].values()).next()))]
-#        print("scf_energy database entry 2:\n{}".format(db[method][n]['scf_energy']['raw_data']))
 
         correction = [0.0 for i in range(len(next(iter(cooked_data[n].values()))))]
-#        correction = [0.0 for i in range(len(cooked_data[n].values()))]
         # Add up all contributions to current correction
         for key,val in cooked_data[n].items():
             correction = [x+y for x,y in zip(correction,val)]
@@ -1561,7 +1552,6 @@ def cook_data(db, method, n):
         # Wipe out data dicts for next result
         cooked_data.clear()
         raw_data.clear()
-#    print("scf_energy database entry 3:\n{}".format(db[method][n]['scf_energy']['raw_data']))
 
 def mbcp_cook(db, method, n):
     cooked_data = collections.OrderedDict()
