@@ -1310,9 +1310,11 @@ def harvest_g09_rotation(db,method,n):
     me = psi4.constants.me
     hbar = h / 2.0 / math.pi
     prefactor = -72E6 * hbar**2 * Na / c**2 / me**2
+    # Mass weight only by the solute, which is assumed to be the first fragment and job
+    M = db[method][1]['MW']['1']
 
     for job in db[method][n]['job_status']:
-        M = db[method][n]['MW'][job]
+#        M = db[method][n]['MW'][job]
         optrot = []
         for omega in db[method][n]['rotation_tensor']['raw_data'][job]:
             w_h = c * h * 1E9 / h2j / omega
