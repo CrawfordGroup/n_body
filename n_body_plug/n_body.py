@@ -1113,8 +1113,9 @@ def harvest_data(db,method,n):
 def harvest_g09(db,method,n):
     print('Harvesting g09...')
     for result in db[method]['results']:
-        print ("Harvesting {}".format(result))
-        getattr(sys.modules[__name__],'harvest_g09_{}'.format(result))(db,method,n)
+        if result != 'scf_dipole_val': # Shoe-horning this harvest into scf_dipole harvesting
+            print ("Harvesting {}".format(result))
+            getattr(sys.modules[__name__],'harvest_g09_{}'.format(result))(db,method,n)
 
 def harvest_scf_energy_data(db,method,n):
     body = n_body_dir(n)
@@ -1125,6 +1126,16 @@ def harvest_scf_energy_data(db,method,n):
             db[method][n]['scf_energy']['raw_data'].update({job:[energy]})
 
 def harvest_scf_dipole_data(db,method,n):
+    db[method]['results'].append('scf_dipole_val')
+    db[method][n]['scf_dipole_val'] = collections.OrderedDict()
+    db[method][n]['scf_dipole_val']['correction'] = 0
+    db[method][n]['scf_dipole_val']['scf_dipole_val'] = 0
+    db[method][n]['scf_dipole_val']['vmfc_correction'] = 0
+    db[method][n]['scf_dipole_val']['vmfc_approximation'] = 0
+    db[method][n]['scf_dipole_val']['mbcp_correction'] = 0
+    db[method][n]['scf_dipole_val']['mbcp_approximation'] = 0
+    db[method][n]['scf_dipole_val']['raw_data'] = collections.OrderedDict()
+    db[method][n]['scf_dipole_val']['cooked_data'] = collections.OrderedDict()
     body = n_body_dir(n)
     for job in db[method][n]['job_status']:
         with open('{}/{}/{}/output.json'.format(method,body,job),'r') as outfile:
@@ -1133,6 +1144,10 @@ def harvest_scf_dipole_data(db,method,n):
             y = jout["SCF DIPOLE Y"]
             z = jout["SCF DIPOLE Z"]
             db[method][n]['scf_dipole']['raw_data'].update({job:[x,y,z]})
+        tens = copy.deepcopy(db[method][n]['scf_dipole']['raw_data'][job])
+        tens = np.asarray(tens)
+        dip = np.linalg.norm(tens)
+        db[method][n]['scf_dipole_val']['raw_data'].update({job:[dip]})
 
 def harvest_quadrupole_data(db,method,n):
     body = n_body_dir(n)
@@ -1240,6 +1255,16 @@ def harvest_g09_scf_energy(db,method,n):
                     db[method][n]['scf_energy']['raw_data'].update({job:[float(energy)]})
 
 def harvest_g09_scf_dipole(db,method,n):
+    db[method]['results'].append('scf_dipole_val')
+    db[method][n]['scf_dipole_val'] = collections.OrderedDict()
+    db[method][n]['scf_dipole_val']['correction'] = 0
+    db[method][n]['scf_dipole_val']['scf_dipole_val'] = 0
+    db[method][n]['scf_dipole_val']['vmfc_correction'] = 0
+    db[method][n]['scf_dipole_val']['vmfc_approximation'] = 0
+    db[method][n]['scf_dipole_val']['mbcp_correction'] = 0
+    db[method][n]['scf_dipole_val']['mbcp_approximation'] = 0
+    db[method][n]['scf_dipole_val']['raw_data'] = collections.OrderedDict()
+    db[method][n]['scf_dipole_val']['cooked_data'] = collections.OrderedDict()
     body = n_body_dir(n)
     # FChk stores dipole moment in AU, convert to Debye
     factor = psi4.constants.dipmom_au2debye
@@ -1253,6 +1278,10 @@ def harvest_g09_scf_dipole(db,method,n):
                     get_next = False
                 if 'Dipole Moment' in line:
                     get_next = True
+        tens = copy.deepcopy(db[method][n]['scf_dipole']['raw_data'][job])
+        tens = np.asarray(tens)
+        dip = np.linalg.norm(tens)
+        db[method][n]['scf_dipole_val']['raw_data'].update({job:[dip]})
 
 
 def harvest_g09_quadrupole(db,method,n):
