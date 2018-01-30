@@ -1060,9 +1060,9 @@ def process_options(name, db, options):
 #                elif key == 'cutoff':
 #                    print("cutoff")
 #                    processed_options['cutoff'] = options[key]
-#                elif key == 'num_threads':
+                elif key == 'num_threads':
 #                    print("num_threads")
-#                    processed_options['num_threads'] = options[key]
+                    processed_options['num_threads'] = options[key]
                 elif key == 'bsse':
 #                    print("bsse")
                     processed_options['bsse'] = options[key]
