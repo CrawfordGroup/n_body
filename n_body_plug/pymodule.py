@@ -85,7 +85,6 @@ def run_n_body(name, **kwargs):
     if 'cutoff' in n_body_options:
         db['cutoff'] = n_body_options['cutoff']
     if 'num_threads' in n_body_options:
-        print("looks like we've got num_threads")
         db['num_threads'] = n_body_options['num_threads']
     if 'bsse' in n_body_options:
         db['bsse'] = n_body_options['bsse']
