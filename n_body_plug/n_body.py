@@ -1579,7 +1579,10 @@ def cook_data(db, method, n):
         if n > 1: 
             prev = db[method][n-1][result][result]
             curr = db[method][n][result][result]
-            db[method][n][result][result] = [x+y for x,y in zip(curr,prev)]
+            if prev != 0:
+                db[method][n][result][result] = [x+y for x,y in zip(curr,prev)]
+            else:
+                print("Previous result 0, {}-body jobs are likely not finished. Stopping harvest.".format(n-1))
 
         # Wipe out data dicts for next result
         cooked_data.clear()
