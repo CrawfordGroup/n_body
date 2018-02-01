@@ -1108,7 +1108,10 @@ def n_body_dir(n):
 
 def harvest_data(db,method,n):
     for result in db[method]['results']:
-        getattr(sys.modules[__name__],'harvest_{}_data'.format(result))(db,method,n)
+        if result == 'timing':
+            print("Timing data for PSI4 jobs cannot currently be harvested. Buy a developer a beer.")
+        else:
+            getattr(sys.modules[__name__],'harvest_{}_data'.format(result))(db,method,n)
 
 def harvest_g09(db,method,n):
     print('Harvesting g09...')
@@ -1508,7 +1511,6 @@ def harvest_g09_polarizability(db, method, n):
         # Place results in database
         db[method][n]['polarizability']['raw_data'].update({job: pols})
 
-
                 
 def harvest_g09_polarizability_tensor(db, method, n):
     body = n_body_dir(n)
@@ -1524,6 +1526,19 @@ def harvest_g09_polarizability_tensor(db, method, n):
                 tensors.extend(grab_g09_matrix(outfile, 'Alpha(-w,w) frequency  {}'.format(k+1), 3))
         tensors = reorder_g09_rotations(tensors)
         db[method][n]['polarizability_tensor']['raw_data'].update({job: tensors})
+
+
+def harvest_g09_timing(db, method, n):
+    body = n_body_dir(n)
+    for job in db[method][n]['job_status']:
+        with open('{}/{}/{}/input.log'.format(method,body,job),'r') as outfile:
+            for line in outfile:
+                if 'Job cpu time:' in line:
+                    junk, junk, junk, days, junk, hours, junk, minutes, junk, seconds, junk = line.split()
+                    # Hold timing data in hours
+                    time = float(days)*24 + float(hours) + float(minutes)/60.0 + float(seconds)/3600.0
+                    db[method][n]['timing']['raw_data'].update({job:[time]})
+                    print("Time for job {} is {}".format(job,time))
 
 def cook_data(db, method, n):
     """ Cook all no-BSSE or SSFC data """
