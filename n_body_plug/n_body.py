@@ -140,7 +140,7 @@ def extend_database(database, kwargs):
         database[method]['n_body_max'] = n_body_max
         # Assume we'll have scf energy and dipole
         # TODO: check dft energy printing and extend this
-        database[method]['results'] = ['scf_energy','scf_dipole']
+        database[method]['results'] = ['scf_energy','scf_dipole', 'timing']
         # DFT methods
         if method == 'b3lyp':
             database[method]['results'].append('quadrupole')
