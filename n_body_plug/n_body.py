@@ -1547,6 +1547,25 @@ def cook_data(db, method, n):
     cooked_data = collections.OrderedDict()
     raw_data    = collections.OrderedDict()
     for result in db[method]['results']:
+        print("Beginning of {} results loop".format(result))
+        # Do timing data first
+        if result == 'timing':
+            # Get the sum of times from current n-body calculations
+            n_time = 0
+            for job in db[method][n]['timing']['raw_data']:
+                n_time += db[method][n]['timing']['raw_data'][job][0]
+            db[method][n]['timing']['correction'] = [n_time]
+            print("{}-body correction is {} seconds".format(n, n_time*3600))
+
+            # Get the sum of m-body calculations m<n
+            m_time = 0
+            if n > 1:
+                m_time = db[method][n-1]['timing']['timing'][0]
+
+            # Get new total time at n-body            
+            db[method][n]['timing']['timing'] = [n_time + m_time]
+            continue
+        print("Left timing")
         # Read in all cooked_data for m < n
         for m in range(1, n):
             cooked_data[m] = copy.deepcopy(db[method][m][result]['cooked_data'])
