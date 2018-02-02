@@ -140,7 +140,7 @@ def extend_database(database, kwargs):
         database[method]['n_body_max'] = n_body_max
         # Assume we'll have scf energy and dipole
         # TODO: check dft energy printing and extend this
-        database[method]['results'] = ['scf_energy','scf_dipole']
+        database[method]['results'] = ['scf_energy','scf_dipole', 'timing']
         # DFT methods
         if method == 'b3lyp':
             database[method]['results'].append('quadrupole')
@@ -1108,7 +1108,10 @@ def n_body_dir(n):
 
 def harvest_data(db,method,n):
     for result in db[method]['results']:
-        getattr(sys.modules[__name__],'harvest_{}_data'.format(result))(db,method,n)
+        if result == 'timing':
+            print("Timing data for PSI4 jobs cannot currently be harvested. Buy a developer a beer.")
+        else:
+            getattr(sys.modules[__name__],'harvest_{}_data'.format(result))(db,method,n)
 
 def harvest_g09(db,method,n):
     print('Harvesting g09...')
@@ -1508,7 +1511,6 @@ def harvest_g09_polarizability(db, method, n):
         # Place results in database
         db[method][n]['polarizability']['raw_data'].update({job: pols})
 
-
                 
 def harvest_g09_polarizability_tensor(db, method, n):
     body = n_body_dir(n)
@@ -1525,6 +1527,18 @@ def harvest_g09_polarizability_tensor(db, method, n):
         tensors = reorder_g09_rotations(tensors)
         db[method][n]['polarizability_tensor']['raw_data'].update({job: tensors})
 
+
+def harvest_g09_timing(db, method, n):
+    body = n_body_dir(n)
+    for job in db[method][n]['job_status']:
+        with open('{}/{}/{}/input.log'.format(method,body,job),'r') as outfile:
+            for line in outfile:
+                if 'Job cpu time:' in line:
+                    junk, junk, junk, days, junk, hours, junk, minutes, junk, seconds, junk = line.split()
+                    # Hold timing data in hours
+                    time = float(days)*24 + float(hours) + float(minutes)/60.0 + float(seconds)/3600.0
+                    db[method][n]['timing']['raw_data'].update({job:[time]})
+
 def cook_data(db, method, n):
     """ Cook all no-BSSE or SSFC data """
     # Automatic cooking requires all result data be stored as lists in the
@@ -1532,6 +1546,22 @@ def cook_data(db, method, n):
     cooked_data = collections.OrderedDict()
     raw_data    = collections.OrderedDict()
     for result in db[method]['results']:
+        # Do timing data first
+        if result == 'timing':
+            # Get the sum of times from current n-body calculations
+            n_time = 0
+            for job in db[method][n]['timing']['raw_data']:
+                n_time += db[method][n]['timing']['raw_data'][job][0]
+            db[method][n]['timing']['correction'] = [n_time]
+
+            # Get the sum of m-body calculations m<n
+            m_time = 0
+            if n > 1:
+                m_time = db[method][n-1]['timing']['timing'][0]
+
+            # Get new total time at n-body            
+            db[method][n]['timing']['timing'] = [n_time + m_time]
+            continue
         # Read in all cooked_data for m < n
         for m in range(1, n):
             cooked_data[m] = copy.deepcopy(db[method][m][result]['cooked_data'])
