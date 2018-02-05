@@ -162,6 +162,7 @@ def extend_database(database, kwargs):
             if 'rotation' in kwargs['properties']:
                 database[method]['results'].append('rotation')
                 database[method]['results'].append('solute_rotation')
+                database[method]['results'].append('solute_timing')
 #                database[method]['results'].append('rotation_tensor')
             if 'quadrupole' in kwargs['properties']:
                 database[method]['results'].append('quadrupole')
@@ -1612,6 +1613,19 @@ def harvest_g09_timing(db, method, n):
                     time = float(days)*24 + float(hours) + float(minutes)/60.0 + float(seconds)/3600.0
                     db[method][n]['timing']['raw_data'].update({job:[time]})
 
+
+def harvest_g09_solute_timing(db, method, n):
+    body = n_body_dir(n)
+    for job in db[method][n]['job_status']:
+        if '1' in job:
+            with open('{}/{}/{}/input.log'.format(method,body,job),'r') as outfile:
+                for line in outfile:
+                    if 'Job cpu time:' in line:
+                        junk, junk, junk, days, junk, hours, junk, minutes, junk, seconds, junk = line.split()
+                        # Hold timing data in hours
+                        time = float(days)*24 + float(hours) + float(minutes)/60.0 + float(seconds)/3600.0
+                        db[method][n]['solute_timing']['raw_data'].update({job:[time]})
+
 def cook_data(db, method, n):
     """ Cook all no-BSSE or SSFC data """
     # Automatic cooking requires all result data be stored as lists in the
@@ -1620,20 +1634,20 @@ def cook_data(db, method, n):
     raw_data    = collections.OrderedDict()
     for result in db[method]['results']:
         # Do timing data first
-        if result == 'timing':
+        if 'timing' in result:
             # Get the sum of times from current n-body calculations
             n_time = 0
-            for job in db[method][n]['timing']['raw_data']:
-                n_time += db[method][n]['timing']['raw_data'][job][0]
-            db[method][n]['timing']['correction'] = [n_time]
+            for job in db[method][n][result]['raw_data']:
+                n_time += db[method][n][result]['raw_data'][job][0]
+            db[method][n][result]['correction'] = [n_time]
 
             # Get the sum of m-body calculations m<n
             m_time = 0
             if n > 1:
-                m_time = db[method][n-1]['timing']['timing'][0]
+                m_time = db[method][n-1][result][result][0]
 
             # Get new total time at n-body            
-            db[method][n]['timing']['timing'] = [n_time + m_time]
+            db[method][n][result][result] = [n_time + m_time]
             continue
         # Read in all cooked_data for m < n
         for m in range(1, n):
