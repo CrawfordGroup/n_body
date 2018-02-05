@@ -161,6 +161,7 @@ def extend_database(database, kwargs):
 #                database[method]['results'].append('polarizability_tensor')
             if 'rotation' in kwargs['properties']:
                 database[method]['results'].append('rotation')
+#                database[method]['results'].append('solute_rotation')
 #                database[method]['results'].append('rotation_tensor')
             if 'quadrupole' in kwargs['properties']:
                 database[method]['results'].append('quadrupole')
@@ -1376,13 +1377,53 @@ def harvest_g09_rotation(db,method,n):
 #        print("Got the rotations! We found: {} for job {}".format(optrot, job))
 #        db[method][n]['rotation']['raw_data'].update({job: optrot})
 
+
+def harvest_g09_solute_rotation(db,method,n):
+    """Harvests g09 rotations for solute molecules only. I have to extend the database manually here, so that
+        harvest_g09_rotation_tensor() doesn't get called multiple times."""
+    db[method]['results'].append('solute_rotation_tensor')
+    db[method][n]['solute_rotation_tensor'] = collections.OrderedDict()
+    db[method][n]['solute_rotation_tensor']['correction'] = 0
+    db[method][n]['solute_rotation_tensor']['solute_rotation_tensor'] = 0
+    db[method][n]['solute_rotation_tensor']['vmfc_correction'] = 0
+    db[method][n]['solute_rotation_tensor']['vmfc_approximation'] = 0
+    db[method][n]['solute_rotation_tensor']['mbcp_correction'] = 0
+    db[method][n]['solute_rotation_tensor']['mbcp_approximation'] = 0
+    db[method][n]['solute_rotation_tensor']['raw_data'] = collections.OrderedDict()
+    db[method][n]['solute_rotation_tensor']['cooked_data'] = collections.OrderedDict()
+    harvest_g09_solute_rotation_tensor(db,method,n)
+    body = n_body_dir(n)
+    c = psi4.constants.c
+    h = psi4.constants.h
+    h2j = psi4.constants.hartree2J
+    Na = psi4.constants.na
+    me = psi4.constants.me
+    hbar = h / 2.0 / math.pi
+    prefactor = -72E6 * hbar**2 * Na / c**2 / me**2
+    # Mass weight only by the solute, which is assumed to be the first fragment and job
+    M = db[method][1]['MW']['1']
+
+    for job in db[method][n]['job_status']:
+        if '1' in job:
+    #        M = db[method][n]['MW'][job]
+            optrot = []
+            for omega in db[method][n]['solute_rotation_tensor']['raw_data'][job]:
+                w_h = c * h * 1E9 / h2j / omega
+                tr = np.trace(db[method][n]['solute_rotation_tensor']['raw_data'][job][omega])
+                # Multiply by additional omega to account for different mu operator
+                rot = prefactor * w_h * tr / M / 3.0 * w_h
+                optrot.append(rot)
+            optrot = reorder_g09_rotations(optrot, db)
+            db[method][n]['solute_rotation']['raw_data'].update({job: optrot})
+
+
 def reorder_g09_rotations(optrot, db, omega=None):
     '''# g09 specific rotations are output in order of wavelength
     # ascending/descending depending on the units
     # Descending:  NM
     # Ascending: AU, EV, HZ 
     # No matter the user specified order. Here we're resorting them to
-    # be in the same order as specified by the user.'''
+    # be in the same order as specified by the user, assuming NM units.'''
 
     # Get user specified omega list
 #    if not omega:
@@ -1476,6 +1517,44 @@ def harvest_g09_rotation_tensor(db, method, n):
 #        # Resort the tensors to user specified order
 #        tensors = reorder_g09_rotations(tensors)
         db[method][n]['rotation_tensor']['raw_data'].update({job: tensors})
+
+
+def harvest_g09_solute_rotation_tensor(db, method, n):
+    body = n_body_dir(n)
+    # G09 ALWAYS prints rotation for each wavelength in DESCENDING order
+    omega_dec = copy.deepcopy(db['omega'])
+    omega_dec.sort(reverse=True)
+    n_omega = len(omega_dec)
+    # Gaussian prints every single value from each tensor in a row, 5 values per row
+    n_rows = math.floor(9*n_omega/5)
+    for job in db[method][n]['job_status']:
+        if '1' in job:
+            print("Collecting solute rotation tensor from job {}".format(job))
+            # Need a dictionary to hold the different tensors
+            tensors = {}       
+            # Need to cram all of the values into a 1D list
+            ten_vals = []
+            get_line = 0
+            get_next = 0
+            with open('{}/{}/{}/Test.FChk'.format(method,body,job)) as outfile:
+                for line in outfile:
+                    if (get_next == 1) & (get_line <= n_rows):
+                        ten_vals += line.split()
+                        get_line += 1
+                    if 'FD Optical Rotation Tensor' in line:
+                        get_next = 1
+            
+            for i in range(0,len(ten_vals)):
+                ten_vals[i] = float(ten_vals[i])
+            vals = np.asarray(ten_vals)
+            vals = np.split(vals, n_omega)
+            i = 0
+            for omega in omega_dec:
+                tensors[omega] = vals[i].reshape(3,3).T
+                i+=1
+    #        # Resort the tensors to user specified order
+    #        tensors = reorder_g09_rotations(tensors)
+            db[method][n]['solute_rotation_tensor']['raw_data'].update({job: tensors})
             
 
 def harvest_g09_polarizability(db, method, n):
