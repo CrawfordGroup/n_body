@@ -163,7 +163,7 @@ def extend_database(database, kwargs):
 #                database[method]['results'].append('polarizability_tensor')
             if 'rotation' in kwargs['properties']:
                 database[method]['results'].append('rotation')
-#                database[method]['results'].append('solute_rotation')
+                database[method]['results'].append('solute_rotation')
 #                database[method]['results'].append('rotation_tensor')
             if 'quadrupole' in kwargs['properties']:
                 database[method]['results'].append('quadrupole')
