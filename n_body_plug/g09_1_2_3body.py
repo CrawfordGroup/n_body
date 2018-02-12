@@ -39,7 +39,8 @@ body_list += [3]
 # eleven-body
 #body_list += [11]
 
-method_list += ['b3lyp']
+#method_list += ['b3lyp']
+method_list += ['cam-b3lyp']
 #method_list += ['ccsd']
 #method_list += ['cc2']
 
