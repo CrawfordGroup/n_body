@@ -67,7 +67,8 @@ set {
 # current running example for ssfc bsse calculations
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'ssfc'}, properties=['quadrupole'])
 # gaussian integration is currently being fixed
-n_body_plug.run_n_body('b3lyp', n_body={'b3lyp': 3, 'bsse': 'ssfc'}, properties=['rotation'])
+n_body_plug.run_n_body('cam-b3lyp',  n_body={'cam-b3lyp': 3, 'bsse': 'ssfc'}, properties=['rotation'])
+n_body_plug.run_n_body('b3lyp',  n_body={'b3lyp': 3, 'bsse': 'ssfc'}, properties=['rotation'])
 
 
 

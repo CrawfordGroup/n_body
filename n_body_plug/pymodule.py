@@ -320,7 +320,8 @@ def run_n_body(name, **kwargs):
 #            if method in n_body.dft_methods:
 #                outname = 'input.log'
 #                complete_message = 'Normal termination of Gaussian'
-            if (method == 'b3lyp'):
+#            if (method == 'b3lyp'):
+            if method in n_body.dft_methods:
                 outname = 'input.log'
                 complete_message = 'Normal termination of Gaussian'
                 error_message = 'Error termination'
@@ -380,7 +381,8 @@ def run_n_body(name, **kwargs):
                 if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
 #                    if method in n_body.dft_methods:
 #                        n_body.harvest_g09(db,method,field)
-                    if (method == 'b3lyp'):
+#                    if (method == 'b3lyp'):
+                    if method in n_body.dft_methods:
                         n_body.harvest_g09(db,method,field)
                     else:
                         n_body.harvest_data(db,method,field)

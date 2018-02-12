@@ -41,8 +41,6 @@
 #
 #
 
-##### NOTE: dft_methods is broken around line ~980 or so#####
-
 ##### ORIGINALLY ALL OF THESE WERE COMMENTED OUT. #####
 ##### I WILL BE UNCOMMENTING/REPLACING AS NEEDED. #####
 
@@ -65,6 +63,10 @@ import os
 import json
 # need numpy for holding property tensors
 import numpy as np
+
+
+dft_methods = ['b3lyp', 'cam-b3lyp']
+
 
 def clean_up(db):
     try:
@@ -142,7 +144,8 @@ def extend_database(database, kwargs):
         # TODO: check dft energy printing and extend this
         database[method]['results'] = ['scf_energy','scf_dipole', 'timing']
         # DFT methods
-        if method == 'b3lyp':
+#        if method == 'b3lyp':
+        if method in dft_methods:
             database[method]['results'].append('quadrupole')
         # Add correlation energy
         # Coupled Cluster methods
@@ -1010,18 +1013,6 @@ def print_body(n):
     return('{}-Body'.format(num_2_word[n]))
 
     
-
-##### NOTE: BROKEN #####
-##### AJ SAYS IT NO LONGER EXISTS #####
-##### TALK TO HIM #####
-# Build list of dft functional names
-#dft_methods = []
-#for ssuper in functional.superfunctional_list():
-#    dft_methods.append(ssuper.name().lower())
-## Adds HF for now as psi4 can't yet do optical rotations
-#dft_methods.append('hf')
-
-
 def process_options(name, db, options):
     processed_options = {'methods':{}}
     molecule = psi4.core.get_active_molecule()
@@ -1051,7 +1042,8 @@ def process_options(name, db, options):
                 if key in psi4.driver.procedures['{}'.format(func.__name__)].keys():
                     processed_options['methods'].update({key:options[key]})
                 # dft method?
-                elif (key == 'b3lyp'):
+#                elif (key == 'b3lyp'):
+                elif key in dft_methods:
                     processed_options['methods'].update({key:options[key]})
 #                # distributed?
 #                elif key == 'distributed':
@@ -1900,7 +1892,8 @@ def plant(cluster, db, kwargs, method, directory):
     # Write psi4 input files
     # What type of function are we running?
     func = db['n_body_func']
-    if (method == 'b3lyp'):
+#    if (method == 'b3lyp'):
+    if method in dft_methods:
         # Using g09 for dft properties
         # Convert from psi4 keywords to g09 equivalent
         # Note that Polar=Dipole calculates quadrupoles as well
