@@ -1530,7 +1530,7 @@ def harvest_g09_solute_rotation_tensor(db, method, n):
     n_rows = math.floor(9*n_omega/5)
     for job in db[method][n]['job_status']:
         if '1' in job:
-            print("Collecting solute rotation tensor from job {}".format(job))
+#            print("Collecting solute rotation tensor from job {}".format(job))
             # Need a dictionary to hold the different tensors
             tensors = {}       
             # Need to cram all of the values into a 1D list
