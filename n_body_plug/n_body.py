@@ -41,8 +41,6 @@
 #
 #
 
-##### NOTE: dft_methods is broken around line ~980 or so#####
-
 ##### ORIGINALLY ALL OF THESE WERE COMMENTED OUT. #####
 ##### I WILL BE UNCOMMENTING/REPLACING AS NEEDED. #####
 
@@ -65,6 +63,10 @@ import os
 import json
 # need numpy for holding property tensors
 import numpy as np
+
+
+dft_methods = ['b3lyp', 'cam-b3lyp']
+
 
 def clean_up(db):
     try:
@@ -142,7 +144,8 @@ def extend_database(database, kwargs):
         # TODO: check dft energy printing and extend this
         database[method]['results'] = ['scf_energy','scf_dipole', 'timing']
         # DFT methods
-        if method == 'b3lyp':
+#        if method == 'b3lyp':
+        if method in dft_methods:
             database[method]['results'].append('quadrupole')
         # Add correlation energy
         # Coupled Cluster methods
@@ -1012,18 +1015,6 @@ def print_body(n):
     return('{}-Body'.format(num_2_word[n]))
 
     
-
-##### NOTE: BROKEN #####
-##### AJ SAYS IT NO LONGER EXISTS #####
-##### TALK TO HIM #####
-# Build list of dft functional names
-#dft_methods = []
-#for ssuper in functional.superfunctional_list():
-#    dft_methods.append(ssuper.name().lower())
-## Adds HF for now as psi4 can't yet do optical rotations
-#dft_methods.append('hf')
-
-
 def process_options(name, db, options):
     processed_options = {'methods':{}}
     molecule = psi4.core.get_active_molecule()
@@ -1053,7 +1044,8 @@ def process_options(name, db, options):
                 if key in psi4.driver.procedures['{}'.format(func.__name__)].keys():
                     processed_options['methods'].update({key:options[key]})
                 # dft method?
-                elif (key == 'b3lyp'):
+#                elif (key == 'b3lyp'):
+                elif key in dft_methods:
                     processed_options['methods'].update({key:options[key]})
 #                # distributed?
 #                elif key == 'distributed':
@@ -1118,8 +1110,10 @@ def harvest_data(db,method,n):
 def harvest_g09(db,method,n):
     print('Harvesting g09...')
     for result in db[method]['results']:
-        if result != 'scf_dipole_val': # Shoe-horning this harvest into scf_dipole harvesting
-            print ("Harvesting {}".format(result))
+        # scf_dipole_val is shoe-horned into scf_dipole harvest
+        # harvesting polarizabilities is broken at the moment
+        if result != 'scf_dipole_val': 
+#            print ("Harvesting {}".format(result))
             getattr(sys.modules[__name__],'harvest_g09_{}'.format(result))(db,method,n)
 
 def harvest_scf_energy_data(db,method,n):
@@ -1536,7 +1530,7 @@ def harvest_g09_solute_rotation_tensor(db, method, n):
     n_rows = math.floor(9*n_omega/5)
     for job in db[method][n]['job_status']:
         if '1' in job:
-            print("Collecting solute rotation tensor from job {}".format(job))
+#            print("Collecting solute rotation tensor from job {}".format(job))
             # Need a dictionary to hold the different tensors
             tensors = {}       
             # Need to cram all of the values into a 1D list
@@ -1993,7 +1987,8 @@ def plant(cluster, db, kwargs, method, directory):
     # Write psi4 input files
     # What type of function are we running?
     func = db['n_body_func']
-    if (method == 'b3lyp'):
+#    if (method == 'b3lyp'):
+    if method in dft_methods:
         # Using g09 for dft properties
         # Convert from psi4 keywords to g09 equivalent
         # Note that Polar=Dipole calculates quadrupoles as well
@@ -2044,6 +2039,10 @@ def plant(cluster, db, kwargs, method, directory):
                     infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
                 # Uncomment following line for tight convergence
                 #infile.write(' SCF(Conver=12,MaxCycle=512) Integral(UltraFine)')
+
+                # Uncomment following line for noraff integrals
+                infile.write(' int(noraff)')
+
                 infile.write(' {} FormCheck\n\n'.format(psi4_to_g09[prop]))
 
                 # Write autogen comment and job name info
