@@ -1108,8 +1108,10 @@ def harvest_data(db,method,n):
 def harvest_g09(db,method,n):
     print('Harvesting g09...')
     for result in db[method]['results']:
-        if result != 'scf_dipole_val': # Shoe-horning this harvest into scf_dipole harvesting
-            print ("Harvesting {}".format(result))
+        # scf_dipole_val is shoe-horned into scf_dipole harvest
+        # harvesting polarizabilities is broken at the moment
+        if result != 'scf_dipole_val': 
+#            print ("Harvesting {}".format(result))
             getattr(sys.modules[__name__],'harvest_g09_{}'.format(result))(db,method,n)
 
 def harvest_scf_energy_data(db,method,n):
@@ -1944,6 +1946,10 @@ def plant(cluster, db, kwargs, method, directory):
                     infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
                 # Uncomment following line for tight convergence
                 #infile.write(' SCF(Conver=12,MaxCycle=512) Integral(UltraFine)')
+
+                # Uncomment following line for noraff integrals
+                infile.write(' int(noraff)')
+
                 infile.write(' {} FormCheck\n\n'.format(psi4_to_g09[prop]))
 
                 # Write autogen comment and job name info
