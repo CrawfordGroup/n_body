@@ -130,7 +130,9 @@ def initialize_database(database, kwargs):
     if 'properties' in kwargs:
         database['n_body_func'] = psi4.properties
         database['omega'] = psi4.core.get_option('CCRESPONSE','OMEGA')
-        database['omega'].pop()
+        unit = database['omega'].pop()
+        if unit != "NM":
+            sys.exit("UNITS SHOULD BE NM, NOT {}".format(unit))
     else:
         database['n_body_func'] = psi4.energy
     database['methods']          = {}
@@ -844,6 +846,11 @@ def print_rank_two(db, method, n, result):
  
 
 def mass_adjust_rotations(db, method, n):
+    '''
+    This function is OUT OF USE. It is being held for now, but mass adjusting
+    now takes place when the rotations are stored.
+    See harvest functions for details.
+    '''
     #omega = psi4.get_global_option('OMEGA')
     #if len(omega) > 1:
     #    units = omega.pop()
@@ -1301,18 +1308,6 @@ def harvest_g09_quadrupole(db,method,n):
                     
                 if 'Quadrupole Moment' in line:
                     get_next = 1
-#                if get_next == 1:
-#                    (xx, xx_val, yy, yy_val, zz, zz_val) = line.split()
-#                    get_next = 2
-#                    continue
-#                if get_next == 2:
-#                    (xy, xy_val, xz, xz_val, yz_val, yz_val) = line.split()
-#                    db[method][n]['quadrupole']['raw_data'].update({job: 
-#                                [float(xx_val), float(yy_val), float(zz_val),
-#                                 float(xy_val), float(xz_val), float(yz_val)]})
-#                    get_next = 0
-#                if 'Traceless Quadrupole moment' in line:
-#                    get_next = 1
 
 def harvest_g09_rotation(db,method,n):
     """Harvests g09 rotations. I have to extend the database manually here, so that
@@ -1340,7 +1335,6 @@ def harvest_g09_rotation(db,method,n):
     M = db[method][1]['MW']['1']
 
     for job in db[method][n]['job_status']:
-#        M = db[method][n]['MW'][job]
         optrot = []
         for omega in db[method][n]['rotation_tensor']['raw_data'][job]:
             w_h = c * h * 1E9 / h2j / omega
@@ -1351,30 +1345,6 @@ def harvest_g09_rotation(db,method,n):
         optrot = reorder_g09_rotations(optrot, db)
         db[method][n]['rotation']['raw_data'].update({job: optrot})
         
-#        with open('{}/{}/{}/input.log'.format(method,body,job)) as outfile:
-#            for line in outfile:
-#                # Assume specific rotations are presented in descending order in
-#                # terms of wavelength in nm, no matter the user specified
-#                # order.
-#                if '[Alpha]' in line:
-#                    try:
-#                        (i,i,i,i,i,i,i,i,i,i,val,i) = line.split()
-#                        optrot.append(float(val))
-#                    # if values are too large there is no space between = and result
-#                    except ValueError:
-#                        try:
-#                            (i,i,i,i,i,i,i,i,i,val,i) = line.split()
-#                            optrot.append(float(val[1:]))
-#                        except:
-#                            optrot.append(0.00)
-#                            print('There has been an overflow in the optical rotation data and they are now meaningless after {}-body.'.format(n))
-        # Resort the rotations from descending wavelength (nm) order to user
-        # specified order
-#        optrot = reorder_g09_rotations(optrot, db)
-
-        # Add list of rotations onto database entry
-#        print("Got the rotations! We found: {} for job {}".format(optrot, job))
-#        db[method][n]['rotation']['raw_data'].update({job: optrot})
 
 def reorder_g09_rotations(optrot, db, omega=None):
     '''# g09 specific rotations are output in order of wavelength
@@ -1444,12 +1414,12 @@ def reorder_g09_rotations(optrot, db, omega=None):
 
 def harvest_g09_rotation_tensor(db, method, n):
     body = n_body_dir(n)
-    # G09 ALWAYS prints rotation for each wavelength in DESCENDING order
+    # G09 ALWAYS prints rotation for each wavelength in DESCENDING order (in NM)
     omega_dec = copy.deepcopy(db['omega'])
     omega_dec.sort(reverse=True)
     n_omega = len(omega_dec)
     # Gaussian prints every single value from each tensor in a row, 5 values per row
-    n_rows = math.floor(9*n_omega/5)
+    n_rows = math.ceil(9*n_omega/5)
     for job in db[method][n]['job_status']:
         # Need a dictionary to hold the different tensors
         tensors = {}       
@@ -1459,7 +1429,7 @@ def harvest_g09_rotation_tensor(db, method, n):
         get_next = 0
         with open('{}/{}/{}/Test.FChk'.format(method,body,job)) as outfile:
             for line in outfile:
-                if (get_next == 1) & (get_line <= n_rows):
+                if (get_next == 1) & (get_line < n_rows):
                     ten_vals += line.split()
                     get_line += 1
                 if 'FD Optical Rotation Tensor' in line:
@@ -1479,46 +1449,69 @@ def harvest_g09_rotation_tensor(db, method, n):
             
 
 def harvest_g09_polarizability(db, method, n):
+    """Harvests g09 polarizabilities. I have to extend the database manually here, so that
+        harvest_g09_polarizability_tensor() doesn't get called multiple times."""
+    db[method]['results'].append('polarizability_tensor')
+    db[method][n]['polarizability_tensor'] = collections.OrderedDict()
+    db[method][n]['polarizability_tensor']['correction'] = 0
+    db[method][n]['polarizability_tensor']['polarizability_tensor'] = 0
+    db[method][n]['polarizability_tensor']['vmfc_correction'] = 0
+    db[method][n]['polarizability_tensor']['vmfc_approximation'] = 0
+    db[method][n]['polarizability_tensor']['mbcp_correction'] = 0
+    db[method][n]['polarizability_tensor']['mbcp_approximation'] = 0
+    db[method][n]['polarizability_tensor']['raw_data'] = collections.OrderedDict()
+    db[method][n]['polarizability_tensor']['cooked_data'] = collections.OrderedDict()
+    harvest_g09_polarizability_tensor(db,method,n)
     body = n_body_dir(n)
-    omega = psi4.get_global_option('OMEGA')
-    if len(omega) > 1:
-        omega.pop()
-    n_omega = len(omega)
     for job in db[method][n]['job_status']:
-        pols = []
-        with open('{}/{}/{}/input.log'.format(method,body,job),'r') as outfile:
-            for line in outfile:
-                # polarizabilities are presented in order of increasing omega
-                # (in au). Means I should probably pass them through the sorting
-                # function I use for rotations
-                if 'Isotropic polarizability' in line:
-                    (i,i,i,i,i, value, i) = line.split()
-                    pols.append(float(value))
-        # Remove zero frequency result
-        if len(pols) > n_omega:
-            pols.pop(0)    
-
-        # Resort the rotations from descending wavelength (nm) order to user
-        # specified order
-        pols = reorder_g09_rotations(pols)
-
-        # Place results in database
-        db[method][n]['polarizability']['raw_data'].update({job: pols})
+        pol_list = []
+        for omega in db[method][n]['polarizability_tensor']['raw_data'][job]:
+            tr = np.trace(db[method][n]['polarizability_tensor']['raw_data'][job][omega])
+            # divide by 3 for a.u.
+            pol = tr / 3.0 
+            pol_list.append(pol)
+        pol_list = reorder_g09_rotations(pol_list, db) # reorder to user-specified order
+        db[method][n]['polarizability']['raw_data'].update({job: pol_list})
 
                 
 def harvest_g09_polarizability_tensor(db, method, n):
     body = n_body_dir(n)
-    omega = psi4.get_global_option('OMEGA')
-    if len(omega) > 1:
-        omega.pop()
-    n_omega = len(omega)
+    # G09 ALWAYS prints polarizability for each wavelength in DESCENDING order (in NM)
+    # it also includes omega = 0, which we will omit
+    omega_dec = copy.deepcopy(db['omega'])
+    omega_dec.sort(reverse=True)
+    n_omega = len(omega_dec)
+    # Gaussian prints every single value from each tensor in a row, 5 values per row
+    # and don't forget the additional tensor for omega = 0
+    n_rows = math.ceil(9*(n_omega+1)/5)
+#    print("n_rows = {}\n".format(n_rows))
     for job in db[method][n]['job_status']:
-        tensors = []
-        with open('{}/{}/{}/input.log'.format(method,body,job),'r') as outfile:
-            for k in range(1, n_omega+1):
-                # n+1 skips the zero tensor which is _frequency 1_
-                tensors.extend(grab_g09_matrix(outfile, 'Alpha(-w,w) frequency  {}'.format(k+1), 3))
-        tensors = reorder_g09_rotations(tensors)
+        # Need a dictionary to hold the different tensors
+        tensors = {}       
+        # Need to cram all of the values into a 1D list
+        ten_vals = []
+        get_line = 0
+        get_next = 0
+        with open('{}/{}/{}/Test.FChk'.format(method,body,job)) as outfile:
+            for line in outfile:
+                if (get_next == 1) & (get_line < n_rows):
+#                    print("got a line\n")
+                    ten_vals += line.split()
+                    get_line += 1
+                if 'Alpha(-w,w)' in line:
+                    get_next = 1
+        
+        for i in range(0,len(ten_vals)):
+            ten_vals[i] = float(ten_vals[i])
+        vals = np.asarray(ten_vals)
+        vals = vals[9:] # the first 9 values are for omega = 0, cut them out
+        vals = np.split(vals, n_omega)
+        i = 0
+        for omega in omega_dec:
+            tensors[omega] = vals[i].reshape(3,3).T
+            i+=1
+#        # Resort the tensors to user specified order
+#        tensors = reorder_g09_rotations(tensors)
         db[method][n]['polarizability_tensor']['raw_data'].update({job: tensors})
 
 

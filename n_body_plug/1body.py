@@ -40,8 +40,9 @@ body_list += [1]
 #body_list += [11]
 
 #method_list += ['b3lyp']
+method_list += ['cam-b3lyp']
 #method_list += ['ccsd']
-method_list += ['cc2']
+#method_list += ['cc2']
 
 ## Submit file for jobs containing the solute molecule
 #  Default name is solute
