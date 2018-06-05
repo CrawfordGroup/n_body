@@ -1419,7 +1419,7 @@ def harvest_g09_rotation_tensor(db, method, n):
     omega_dec.sort(reverse=True)
     n_omega = len(omega_dec)
     # Gaussian prints every single value from each tensor in a row, 5 values per row
-    n_rows = math.floor(9*n_omega/5)
+    n_rows = math.ceil(9*n_omega/5)
     for job in db[method][n]['job_status']:
         # Need a dictionary to hold the different tensors
         tensors = {}       
@@ -1429,7 +1429,7 @@ def harvest_g09_rotation_tensor(db, method, n):
         get_next = 0
         with open('{}/{}/{}/Test.FChk'.format(method,body,job)) as outfile:
             for line in outfile:
-                if (get_next == 1) & (get_line <= n_rows):
+                if (get_next == 1) & (get_line < n_rows):
                     ten_vals += line.split()
                     get_line += 1
                 if 'FD Optical Rotation Tensor' in line:
@@ -1483,7 +1483,8 @@ def harvest_g09_polarizability_tensor(db, method, n):
     n_omega = len(omega_dec)
     # Gaussian prints every single value from each tensor in a row, 5 values per row
     # and don't forget the additional tensor for omega = 0
-    n_rows = math.floor(9*(n_omega+1)/5)
+    n_rows = math.ceil(9*(n_omega+1)/5)
+#    print("n_rows = {}\n".format(n_rows))
     for job in db[method][n]['job_status']:
         # Need a dictionary to hold the different tensors
         tensors = {}       
@@ -1493,7 +1494,8 @@ def harvest_g09_polarizability_tensor(db, method, n):
         get_next = 0
         with open('{}/{}/{}/Test.FChk'.format(method,body,job)) as outfile:
             for line in outfile:
-                if (get_next == 1) & (get_line <= n_rows):
+                if (get_next == 1) & (get_line < n_rows):
+#                    print("got a line\n")
                     ten_vals += line.split()
                     get_line += 1
                 if 'Alpha(-w,w)' in line:
