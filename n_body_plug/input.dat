@@ -72,7 +72,7 @@ set {
 #n_body_plug.run_n_body('b3lyp',  n_body={'b3lyp': 3, 'bsse': 'ssfc'}, properties=['rotation'])
 
 # testing polarizabilities
-n_body_plug.run_n_body('cam-b3lyp',  n_body={'cam-b3lyp': 3}, properties=['polarizability'])
+n_body_plug.run_n_body('cam-b3lyp',  n_body={'cam-b3lyp': 3, 'num_threads': 2}, properties=['polarizability'])
 
 
 # generated input files should also have the following
