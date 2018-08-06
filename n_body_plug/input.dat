@@ -69,11 +69,17 @@ set {
 #n_body_plug.run_n_body('cc2', n_body={'cc2': 2, 'bsse': 'ssfc'}, properties=['quadrupole'])
 # gaussian integration is currently being fixed
 #n_body_plug.run_n_body('cam-b3lyp',  n_body={'cam-b3lyp': 3, 'bsse': 'ssfc'}, properties=['rotation'])
-#n_body_plug.run_n_body('b3lyp',  n_body={'b3lyp': 3, 'bsse': 'ssfc'}, properties=['rotation'])
+#n_body_plug.run_n_body('b3lyp',  n_body={'b3lyp': 3, 'bsse': 'ssfc', 'num_threads': 2}, properties=['rotation'])
 
 # testing polarizabilities
-n_body_plug.run_n_body('cam-b3lyp',  n_body={'cam-b3lyp': 3, 'num_threads': 2}, properties=['polarizability'])
+#n_body_plug.run_n_body('cam-b3lyp',  n_body={'cam-b3lyp': 3, 'num_threads': 2}, properties=['polarizability'])
 
+# testing options for toggling solute rotations, timing, harvesting, and cooking
+#n_body_plug.run_n_body('b3lyp',  n_body={'b3lyp': 3, 'bsse': 'ssfc', 'cook': False, 'num_threads': 2}, properties=['rotation'])
+#n_body_plug.run_n_body('b3lyp',  n_body={'b3lyp': 3, 'bsse': 'ssfc', 'harvest': False, 'num_threads': 2}, properties=['rotation'])
+#n_body_plug.run_n_body('b3lyp',  n_body={'b3lyp': 3, 'bsse': 'ssfc', 'solute': True, 'num_threads': 2}, properties=['rotation'])
+#n_body_plug.run_n_body('b3lyp',  n_body={'b3lyp': 3, 'bsse': 'ssfc', 'timing': True, 'num_threads': 2}, properties=['rotation'])
+n_body_plug.run_n_body('b3lyp',  n_body={'b3lyp': 3, 'bsse': 'ssfc', 'timing': True, 'solute': True, 'num_threads': 2}, properties=['rotation'])
 
 # generated input files should also have the following
 # (automatically added as of commit #2538754)
