@@ -127,6 +127,10 @@ def initialize_database(database, kwargs):
     database['num_threads']      = False
     database['bsse']             = ''
     database['pcm']              = False
+    database['solute']           = False
+    database['timing']           = False
+    database['harvest']          = True
+    database['cook']             = True
     if 'properties' in kwargs:
         database['n_body_func'] = psi4.properties
         database['omega'] = psi4.core.get_option('CCRESPONSE','OMEGA')
@@ -144,7 +148,10 @@ def extend_database(database, kwargs):
         database[method]['n_body_max'] = n_body_max
         # Assume we'll have scf energy and dipole
         # TODO: check dft energy printing and extend this
-        database[method]['results'] = ['scf_energy','scf_dipole', 'timing']
+        #database[method]['results'] = ['scf_energy','scf_dipole', 'timing']
+        database[method]['results'] = ['scf_energy','scf_dipole']
+        if database['timing']:
+            database[method]['results'].append('timing')
         # DFT methods
 #        if method == 'b3lyp':
         if method in dft_methods:
@@ -163,8 +170,10 @@ def extend_database(database, kwargs):
 #                database[method]['results'].append('polarizability_tensor')
             if 'rotation' in kwargs['properties']:
                 database[method]['results'].append('rotation')
-                database[method]['results'].append('solute_rotation')
-                database[method]['results'].append('solute_timing')
+                if database['solute']:
+                    database[method]['results'].append('solute_rotation')
+                    if database['timing']:
+                        database[method]['results'].append('solute_timing')
 #                database[method]['results'].append('rotation_tensor')
             if 'quadrupole' in kwargs['properties']:
                 database[method]['results'].append('quadrupole')
@@ -1072,6 +1081,14 @@ def process_options(name, db, options):
 #                elif key == 'pcm':
 #                    print("pcm")
 #                    processed_options['pcm'] = options[key]
+                elif key == 'solute':
+                    processed_options['solute'] = options[key]
+                elif key == 'harvest':
+                    processed_options['harvest'] = options[key]
+                elif key == 'cook':
+                    processed_options['cook'] = options[key]
+                elif key == 'timing':
+                    processed_options['timing'] = options[key]
                 else:
                     raise Exception('Unrecognized n_body option {}.'.format(key))
                 # remove the entry from options
@@ -1115,7 +1132,6 @@ def harvest_data(db,method,n):
             getattr(sys.modules[__name__],'harvest_{}_data'.format(result))(db,method,n)
 
 def harvest_g09(db,method,n):
-    print('Harvesting g09...')
     for result in db[method]['results']:
         # scf_dipole_val is shoe-horned into scf_dipole harvest
         # harvesting polarizabilities is broken at the moment
