@@ -98,6 +98,8 @@ def run_n_body(name, **kwargs):
         db['harvest'] = n_body_options['harvest']
     if 'cook' in n_body_options:
         db['cook'] = n_body_options['cook']
+    if 'distance' in n_body_options:
+        db['distance'] = n_body_options['distance']
 
     # methods consistency check
     if 'methods' in n_body_options:
@@ -125,6 +127,26 @@ def run_n_body(name, **kwargs):
 
     # Get complete system
     molecule = psi4.core.get_active_molecule()
+
+    # Get distances from solute
+    # Below is a code snippet that computes the distances between the first atom and all other atoms in the molecule.. need to break the molecule into fragments, compute the COM's of each fragment, and get the distances between the slt and the slvt molecules
+#    db['solute_distances'] = {}
+#    slt_xyz = [molecule.fx(0),molecule.fy(0),molecule.fz(0)]
+#    b2a = psi4.constants.bohr2angstroms
+#    for i in range(1,molecule.natom()):
+#        slvt_xyz = [molecule.fx(i),molecule.fy(i),molecule.fz(i)]
+#        slt_dist = n_body.distance(slt_xyz,slvt_xyz)*b2a
+#        db['solute_distances'].update({i+1: slt_dist})
+
+    db['solute_distances'] = {}
+    b2a = psi4.constants.bohr2angstroms # Only supporting angstroms
+    slt = molecule.extract_subsets(1)
+    slt_com = slt.center_of_mass()
+    for i in range(1, molecule.nfragments()+1):
+        frag = molecule.extract_subsets(i)
+        frag_com = frag.center_of_mass()
+        frag_dist = slt_com.distance(frag_com) * b2a
+        db['solute_distances'].update({i: frag_dist})
 
     # Determine interacting fragments
     if db['cutoff']:

@@ -131,6 +131,7 @@ def initialize_database(database, kwargs):
     database['timing']           = False
     database['harvest']          = True
     database['cook']             = True
+    database['distance']         = False
     if 'properties' in kwargs:
         database['n_body_func'] = psi4.properties
         database['omega'] = psi4.core.get_option('CCRESPONSE','OMEGA')
@@ -1089,6 +1090,8 @@ def process_options(name, db, options):
                     processed_options['cook'] = options[key]
                 elif key == 'timing':
                     processed_options['timing'] = options[key]
+                elif key == 'distance':
+                    processed_options['distance'] = options[key]
                 else:
                     raise Exception('Unrecognized n_body option {}.'.format(key))
                 # remove the entry from options
