@@ -148,7 +148,7 @@ def run_n_body(name, **kwargs):
         frag_dist = slt_com.distance(frag_com) * b2a
         db['solvent_distances'].update({str(i): frag_dist})
 
-    # Determine close solute molecules
+    # Determine close solvent molecules
     if db['distance']:
         db['close_solvent'] = []
         for slt in db['solvent_distances']:
