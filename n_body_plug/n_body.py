@@ -1687,6 +1687,7 @@ def cook_data(db, method, n):
         raw_data[n] = copy.deepcopy(db[method][n][result]['raw_data'])
         if db['distance']: # Check if distance cutoff has cut all n-body jobs:
             if len(raw_data[n]) == 0:
+                db[method][n][result][result] = copy.deepcopy(db[method][n-1][result][result])
                 print('No raw_data for {}-body {}, distance_cutoff has likely been reached'.format(n,result))
                 continue
 
