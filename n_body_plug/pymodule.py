@@ -146,7 +146,14 @@ def run_n_body(name, **kwargs):
         frag = molecule.extract_subsets(i)
         frag_com = frag.center_of_mass()
         frag_dist = slt_com.distance(frag_com) * b2a
-        db['solute_distances'].update({i: frag_dist})
+        db['solute_distances'].update({str(i): frag_dist})
+
+    # Determine close solute molecules
+    if db['distance']:
+        db['close_solute'] = []
+        for slt in db['solute_distances']:
+            if db['solute_distances'][slt] < db['distance']:
+                db['close_solute'].append(slt)
 
     # Determine interacting fragments
     if db['cutoff']:

@@ -1644,6 +1644,11 @@ def cook_data(db, method, n):
     # database. Even if the result is a single number (i.e. energies)
     cooked_data = collections.OrderedDict()
     raw_data    = collections.OrderedDict()
+
+    # If there's a distance cutoff, grab the value
+    if db['distance']:
+        dist = copy.deepcopy(db['distance'])
+
     for result in db[method]['results']:
         # Do timing data first
         if 'timing' in result:
@@ -1681,20 +1686,6 @@ def cook_data(db, method, n):
                         zip(cooked_data[n][n_key],cooked_data[m][m_key])]
 
         # Set correction list length
-        #try:
-        #    correction_length = len(cooked_data[n].itervalues().next())
-        #except TypeError:
-            
-        # There is a problem with this when the data doesn't actually exist
-        # (i.e. when calling property('scf', properties=[polarizability] because
-        # there is no polarizability so the list is NoneType. The above try fix
-        # might work, but it would be better to figure out how to actually know
-        # what data quantities are available in a smart way.
-#        correction = [0.0 for i in
-#                      range(len(cooked_data[n].itervalues().next()))]
-#        correction = [0.0 for i in
-#                      range(len(iter(cooked_data[n].values()).next()))]
-
         correction = [0.0 for i in range(len(next(iter(cooked_data[n].values()))))]
         # Add up all contributions to current correction
         for key,val in cooked_data[n].items():
