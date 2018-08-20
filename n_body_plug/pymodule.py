@@ -130,15 +130,15 @@ def run_n_body(name, **kwargs):
 
     # Get distances from solute
     # Below is a code snippet that computes the distances between the first atom and all other atoms in the molecule.. need to break the molecule into fragments, compute the COM's of each fragment, and get the distances between the slt and the slvt molecules
-#    db['solute_distances'] = {}
+#    db['solvent_distances'] = {}
 #    slt_xyz = [molecule.fx(0),molecule.fy(0),molecule.fz(0)]
 #    b2a = psi4.constants.bohr2angstroms
 #    for i in range(1,molecule.natom()):
 #        slvt_xyz = [molecule.fx(i),molecule.fy(i),molecule.fz(i)]
 #        slt_dist = n_body.distance(slt_xyz,slvt_xyz)*b2a
-#        db['solute_distances'].update({i+1: slt_dist})
+#        db['solvent_distances'].update({i+1: slt_dist})
 
-    db['solute_distances'] = {}
+    db['solvent_distances'] = {}
     b2a = psi4.constants.bohr2angstroms # Only supporting angstroms
     slt = molecule.extract_subsets(1)
     slt_com = slt.center_of_mass()
@@ -146,13 +146,13 @@ def run_n_body(name, **kwargs):
         frag = molecule.extract_subsets(i)
         frag_com = frag.center_of_mass()
         frag_dist = slt_com.distance(frag_com) * b2a
-        db['solute_distances'].update({str(i): frag_dist})
+        db['solvent_distances'].update({str(i): frag_dist})
 
     # Determine close solute molecules
     if db['distance']:
         db['close_solvent'] = []
-        for slt in db['solute_distances']:
-            if db['solute_distances'][slt] < db['distance']:
+        for slt in db['solvent_distances']:
+            if db['solvent_distances'][slt] < db['distance']:
                 db['close_solvent'].append(slt)
 
     # Determine interacting fragments
