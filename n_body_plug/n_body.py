@@ -1661,10 +1661,6 @@ def cook_data(db, method, n):
     cooked_data = collections.OrderedDict()
     raw_data    = collections.OrderedDict()
 
-    # If there's a distance cutoff, grab the value
-    if db['distance']:
-        dist = copy.deepcopy(db['distance'])
-
     for result in db[method]['results']:
         # Do timing data first
         if 'timing' in result:
