@@ -150,10 +150,10 @@ def run_n_body(name, **kwargs):
 
     # Determine close solute molecules
     if db['distance']:
-        db['close_solute'] = []
+        db['close_solvent'] = []
         for slt in db['solute_distances']:
             if db['solute_distances'][slt] < db['distance']:
-                db['close_solute'].append(slt)
+                db['close_solvent'].append(slt)
 
     # Determine interacting fragments
     if db['cutoff']:
