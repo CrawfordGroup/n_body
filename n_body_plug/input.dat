@@ -82,7 +82,8 @@ set {
 #n_body_plug.run_n_body('b3lyp',  n_body={'b3lyp': 3, 'bsse': 'ssfc', 'timing': True, 'solute': True, 'num_threads': 2}, properties=['rotation'])
 
 # testing distance cutoff
-n_body_plug.run_n_body('b3lyp',  n_body={'b3lyp': 3, 'bsse': 'ssfc', 'solute': True, 'distance': 7, 'num_threads': 2}, properties=['rotation'])
+n_body_plug.run_n_body('b3lyp',  n_body={'b3lyp': 3, 'bsse': 'ssfc', 'solute': True, 'distance': 7.86, 'num_threads': 2}, properties=['rotation'])
+#n_body_plug.run_n_body('b3lyp',  n_body={'b3lyp': 3, 'bsse': 'ssfc', 'solute': True, 'num_threads': 2}, properties=['rotation'])
 
 # generated input files should also have the following
 # (automatically added as of commit #2538754)
