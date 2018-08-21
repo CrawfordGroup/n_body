@@ -1372,9 +1372,10 @@ def harvest_g09_rotation(db,method,n):
         db[method][n]['rotation']['raw_data'].update({job: optrot})
 
         # If the job only has nearby solvent, drop it into the cutoff data
-        job_set = set(job.split('_'))
-        if job_set <= set(db['close_solvent']):
-            db[method][n]['cutoff_rotation']['raw_data'].update({job: optrot})
+        if db['distance']:
+            job_set = set(job.split('_'))
+            if job_set <= set(db['close_solvent']):
+                db[method][n]['cutoff_rotation']['raw_data'].update({job: optrot})
         
 
 
@@ -1418,9 +1419,10 @@ def harvest_g09_solute_rotation(db,method,n):
             db[method][n]['solute_rotation']['raw_data'].update({job: optrot})
 
             # If the job only has nearby solvent, drop it into the cutoff data
-            job_set = set(job.split('_'))
-            if job_set <= set(db['close_solvent']):
-                db[method][n]['cutoff_solute_rotation']['raw_data'].update({job: optrot})
+            if db['distance']:
+                job_set = set(job.split('_'))
+                if job_set <= set(db['close_solvent']):
+                    db[method][n]['cutoff_solute_rotation']['raw_data'].update({job: optrot})
 
 
 def reorder_g09_rotations(optrot, db, omega=None):
