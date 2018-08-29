@@ -171,14 +171,10 @@ def extend_database(database, kwargs):
 #                database[method]['results'].append('polarizability_tensor')
             if 'rotation' in kwargs['properties']:
                 database[method]['results'].append('rotation')
-                if database['distance']:
-                    database[method]['results'].append('cutoff_rotation')
                 if database['solute']:
                     database[method]['results'].append('solute_rotation')
                     if database['timing']:
                         database[method]['results'].append('solute_timing')
-                    if database['distance']:
-                        database[method]['results'].append('cutoff_solute_rotation')
 #                database[method]['results'].append('rotation_tensor')
             if 'quadrupole' in kwargs['properties']:
                 database[method]['results'].append('quadrupole')
@@ -1141,8 +1137,7 @@ def harvest_data(db,method,n):
 def harvest_g09(db,method,n):
     for result in db[method]['results']:
         # scf_dipole_val is shoe-horned into scf_dipole harvest
-        # all cutoff harvesting is simple if statements in main harvest
-        if (result != 'scf_dipole_val') & ('cutoff' not in result): 
+        if (result != 'scf_dipole_val'): 
 #            print ("Harvesting {}".format(result))
             getattr(sys.modules[__name__],'harvest_g09_{}'.format(result))(db,method,n)
 
@@ -1371,13 +1366,6 @@ def harvest_g09_rotation(db,method,n):
         optrot = reorder_g09_rotations(optrot, db)
         db[method][n]['rotation']['raw_data'].update({job: optrot})
 
-        # If the job only has nearby solvent, drop it into the cutoff data
-        if db['distance']:
-            job_set = set(job.split('_'))
-            if job_set <= set(db['close_solvent']):
-                db[method][n]['cutoff_rotation']['raw_data'].update({job: optrot})
-        
-
 
 def harvest_g09_solute_rotation(db,method,n):
     """Harvests g09 rotations for solute molecules only. I have to extend the database manually here, so that
@@ -1417,12 +1405,6 @@ def harvest_g09_solute_rotation(db,method,n):
                 optrot.append(rot)
             optrot = reorder_g09_rotations(optrot, db)
             db[method][n]['solute_rotation']['raw_data'].update({job: optrot})
-
-            # If the job only has nearby solvent, drop it into the cutoff data
-            if db['distance']:
-                job_set = set(job.split('_'))
-                if job_set <= set(db['close_solvent']):
-                    db[method][n]['cutoff_solute_rotation']['raw_data'].update({job: optrot})
 
 
 def reorder_g09_rotations(optrot, db, omega=None):
@@ -1687,11 +1669,6 @@ def cook_data(db, method, n):
         # Read in raw data for m
         # Eventually should just read this in to cooked_data[n]
         raw_data[n] = copy.deepcopy(db[method][n][result]['raw_data'])
-        if db['distance']: # Check if distance cutoff has cut all n-body jobs:
-            if len(raw_data[n]) == 0:
-                db[method][n][result][result] = copy.deepcopy(db[method][n-1][result][result])
-                print('No raw_data for {}-body {}, distance_cutoff has likely been reached'.format(n,result))
-                continue
 
         # Cook n data
         cooked_data[n] = copy.deepcopy(raw_data[n])

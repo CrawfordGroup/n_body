@@ -129,15 +129,6 @@ def run_n_body(name, **kwargs):
     molecule = psi4.core.get_active_molecule()
 
     # Get distances from solute
-    # Below is a code snippet that computes the distances between the first atom and all other atoms in the molecule.. need to break the molecule into fragments, compute the COM's of each fragment, and get the distances between the slt and the slvt molecules
-#    db['solvent_distances'] = {}
-#    slt_xyz = [molecule.fx(0),molecule.fy(0),molecule.fz(0)]
-#    b2a = psi4.constants.bohr2angstroms
-#    for i in range(1,molecule.natom()):
-#        slvt_xyz = [molecule.fx(i),molecule.fy(i),molecule.fz(i)]
-#        slt_dist = n_body.distance(slt_xyz,slvt_xyz)*b2a
-#        db['solvent_distances'].update({i+1: slt_dist})
-
     db['solvent_distances'] = {}
     b2a = psi4.constants.bohr2angstroms # Only supporting angstroms
     slt = molecule.extract_subsets(1)
@@ -409,39 +400,41 @@ def run_n_body(name, **kwargs):
     db = shelve.open('database',writeback=True)
 
     # Gather results
-    if not db['results_computed']:
-        for method in db['methods'].keys():
-            print('\nAfter job checking:') 
+#    if not db['results_computed']: # Always re-compute results
+    for method in db['methods'].keys():
+        print('\nAfter job checking:') 
+        for field in db[method]['farm']:
+            num_fin = db[method][field]['num_jobs_complete']
+            tot_num = db[method][field]['total_num_jobs']
+            print('{}/{} {}-body jobs finished'.format(num_fin,tot_num,field))
+            if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
+                if db['harvest']:
+                    if method in n_body.dft_methods:
+                        n_body.harvest_g09(db,method,field)
+                    else:
+                        n_body.harvest_data(db,method,field)
+        if not db['harvest']:
+            print("Data harvesting has been disabled.")
+        elif not db['cook']:
+            print("Data cooking has been disabled.")
+        else:
             for field in db[method]['farm']:
-                num_fin = db[method][field]['num_jobs_complete']
-                tot_num = db[method][field]['total_num_jobs']
-                print('{}/{} {}-body jobs finished'.format(num_fin,tot_num,field))
                 if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
-                    if db['harvest']:
-                        if method in n_body.dft_methods:
-                            n_body.harvest_g09(db,method,field)
-                        else:
-                            n_body.harvest_data(db,method,field)
-            if not db['harvest']:
-                print("Data harvesting has been disabled.")
-            elif not db['cook']:
-                print("Data cooking has been disabled.")
-            else:
-                for field in db[method]['farm']:
-                    if (db[method][field]['num_jobs_complete'] == db[method][field]['total_num_jobs']):
-                        n_body.cook_data(db,method,field)
-#                       #if db['bsse'] == 'vmfc' and field > 1:
-#                       #    n_body.vmfc_cook(db, method, field)
-#                       #    n_body.mbcp_cook(db, method, field)
-#                       if db['bsse'] == 'vmfc':
-#                           n_body.vmfc_cook(db, method, field)
-#                           if field > 1:
-#                               n_body.mbcp_cook(db, method, field)
-#                       elif db['bsse'] == 'mbcp' and field > 1:
-#                           n_body.mbcp_cook(db,method,field)
-#                       # Future location of an if check for mass adjust or not
-#                       if 'rotation' in db[method]['results']:
-#                           n_body.mass_adjust_rotations(db,method,field)
+                    n_body.cook_data(db,method,field)
+                    db['results_computed'] = True # Just so outside scripts know the results have been computed
+#                   #if db['bsse'] == 'vmfc' and field > 1:
+#                   #    n_body.vmfc_cook(db, method, field)
+#                   #    n_body.mbcp_cook(db, method, field)
+#                   if db['bsse'] == 'vmfc':
+#                       n_body.vmfc_cook(db, method, field)
+#                       if field > 1:
+#                           n_body.mbcp_cook(db, method, field)
+#                   elif db['bsse'] == 'mbcp' and field > 1:
+#                       n_body.mbcp_cook(db,method,field)
+#                   # Future location of an if check for mass adjust or not
+#                   if 'rotation' in db[method]['results']:
+#                       n_body.mass_adjust_rotations(db,method,field)
+
 
     db.close()
     db = shelve.open('database',writeback=True)
