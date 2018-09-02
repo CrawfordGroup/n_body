@@ -9,6 +9,7 @@ def main():
     # Define method, result(s) to add, grab database 
     method = 'b3lyp'
     results = ['cutoff_rotation', 'cutoff_solute_rotation']
+    distance = 7.86
     db = shelve.open(db_name, writeback=True)
     n_max = db[method]['n_body_max']
     
@@ -21,7 +22,7 @@ def main():
     # NOTE: Need to generate close_solvent here I think, rather than at db generation
     for result in results:
         # Extend the database to hold the new result(s)
-        db = extend(db, method, result)
+        db = extend(db, method, result, distance)
 
         # Cut the irrelevant data for result(s) out of 'raw_data' and store
         for n in range(1,n_max+1):
@@ -48,8 +49,8 @@ def cook(db, method, n, result):
     # Read in raw data for m
     cooked_data[n] = copy.deepcopy(db[method][n][result]['raw_data'])
     if len(cooked_data[n]) == 0: # No raw_data, cutoff probably cut all n-body jobs
-        db[method][n][result][result] = copy.deepcopy(db[method][n-1][result][result])
         print('No raw_data for {}-body {}, distance_cutoff has likely been reached'.format(n,result))
+        db[method][n][result][result] = copy.deepcopy(db[method][n-1][result][result])
         return
 
     # Cook n data
@@ -87,7 +88,7 @@ def cook(db, method, n, result):
     raw_data.clear()
 
 
-def cutoff(db, method, n, full_result, dist = 0):
+def cutoff(db, method, n, full_result):
     '''
     Removes raw_data from the full_result based on the distance cutoff given and returns it
     NOTE: Need to employ a pass-able distance cutoff rather than the hardcoded database one
@@ -103,14 +104,23 @@ def cutoff(db, method, n, full_result, dist = 0):
 
 
 
-def extend(db, method, result):
+def extend(db, method, result, dist = False):
     '''
     Extends the database to hold result
-    Also adds distance cutoff to db if not already present
+    Adds distance cutoff to db if not already present
+    Determines close_solvent molecules
     '''
-    if not 'distance' in db: # Add space for distance if needed
-        db['distance'] = False
+    # Update distance
+    db['distance'] = dist
 
+    # Determine close solvent molecules
+    if dist:
+        db['close_solvent'] = []
+        for slt in db['solvent_distances']:
+            if db['solvent_distances'][slt] < db['distance']:
+                db['close_solvent'].append(slt)
+
+    # Extend database to hold result
     if not result in db[method][1]: # Dict should be properly extended if 1 exists
         farm = copy.deepcopy(db[method]['farm']) # All n-body
         for field in farm:
@@ -128,14 +138,14 @@ def sanity_check(db):
     Checks a database for: 
     jobs_complete
     results_computed
-    distance
+    close_solvent
     '''
     if not db['jobs_complete']:
         raise Exception("Jobs are not complete!")
     elif not db['results_computed']:
         raise Exception("Basic results have not been computed!")
-    elif not db['distance']:
-        raise Exception("No distance cutoff given!")
+    elif not db['solvent_distances']:
+        raise Exception("Close solvent molecules not determined by the driver!")
     else:
         return True
 

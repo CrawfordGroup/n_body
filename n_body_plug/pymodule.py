@@ -98,8 +98,6 @@ def run_n_body(name, **kwargs):
         db['harvest'] = n_body_options['harvest']
     if 'cook' in n_body_options:
         db['cook'] = n_body_options['cook']
-    if 'distance' in n_body_options:
-        db['distance'] = n_body_options['distance']
 
     # methods consistency check
     if 'methods' in n_body_options:
@@ -138,13 +136,6 @@ def run_n_body(name, **kwargs):
         frag_com = frag.center_of_mass()
         frag_dist = slt_com.distance(frag_com) * b2a
         db['solvent_distances'].update({str(i): frag_dist})
-
-    # Determine close solvent molecules
-    if db['distance']:
-        db['close_solvent'] = []
-        for slt in db['solvent_distances']:
-            if db['solvent_distances'][slt] < db['distance']:
-                db['close_solvent'].append(slt)
 
     # Determine interacting fragments
     if db['cutoff']:
