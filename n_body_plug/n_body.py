@@ -1404,6 +1404,46 @@ def harvest_g09_solute_rotation(db,method,n):
             db[method][n]['solute_rotation']['raw_data'].update({job: optrot})
 
 
+
+def harvest_g09_solute_rotation(db,method,n):
+    """Harvests g09 rotations for solute molecules only. I have to extend the database manually here, so that
+        harvest_g09_rotation_tensor() doesn't get called multiple times."""
+    db[method]['results'].append('solute_rotation_tensor')
+    db[method][n]['solute_rotation_tensor'] = collections.OrderedDict()
+    db[method][n]['solute_rotation_tensor']['correction'] = 0
+    db[method][n]['solute_rotation_tensor']['solute_rotation_tensor'] = 0
+    db[method][n]['solute_rotation_tensor']['vmfc_correction'] = 0
+    db[method][n]['solute_rotation_tensor']['vmfc_approximation'] = 0
+    db[method][n]['solute_rotation_tensor']['mbcp_correction'] = 0
+    db[method][n]['solute_rotation_tensor']['mbcp_approximation'] = 0
+    db[method][n]['solute_rotation_tensor']['raw_data'] = collections.OrderedDict()
+    db[method][n]['solute_rotation_tensor']['cooked_data'] = collections.OrderedDict()
+    harvest_g09_solute_rotation_tensor(db,method,n)
+    body = n_body_dir(n)
+    c = psi4.constants.c
+    h = psi4.constants.h
+    h2j = psi4.constants.hartree2J
+    Na = psi4.constants.na
+    me = psi4.constants.me
+    hbar = h / 2.0 / math.pi
+    prefactor = -72E6 * hbar**2 * Na / c**2 / me**2
+    # Mass weight only by the solute, which is assumed to be the first fragment and job
+    M = db[method][1]['MW']['1']
+
+    for job in db[method][n]['job_status']:
+        if '1' in job:
+    #        M = db[method][n]['MW'][job]
+            optrot = []
+            for omega in db[method][n]['solute_rotation_tensor']['raw_data'][job]:
+                w_h = c * h * 1E9 / h2j / omega
+                tr = np.trace(db[method][n]['solute_rotation_tensor']['raw_data'][job][omega])
+                # Multiply by additional omega to account for different mu operator
+                rot = prefactor * w_h * tr / M / 3.0 * w_h
+                optrot.append(rot)
+            optrot = reorder_g09_rotations(optrot, db)
+            db[method][n]['solute_rotation']['raw_data'].update({job: optrot})
+
+
 def reorder_g09_rotations(optrot, db, omega=None):
     '''# g09 specific rotations are output in order of wavelength
     # ascending/descending depending on the units
