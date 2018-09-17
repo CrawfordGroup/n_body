@@ -2028,13 +2028,15 @@ def plant(cluster, db, kwargs, method, directory):
                 # G09 only likes integer values on MEM
                 infile.write('#p {}/{} NoSymmetry'.format(method,basis))
                 if omega_list:
-                    infile.write(' CPHF(RdFreq)')
-                    # Uncomment following line for tight convergence
+                    #infile.write(' CPHF(RdFreq)')
+                    # Uncomment following line and comment the previous for tight convergence
                     #infile.write(' CPHF(Conver=12,RdFreq,Grid=UltraFine)')
+                    infile.write(' CPHF(Conver=12,RdFreq)')
                 if db['pcm']:
                     infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
                 # Uncomment following line for tight convergence
                 #infile.write(' SCF(Conver=12,MaxCycle=512) Integral(UltraFine)')
+                infile.write(' SCF(Conver=12,MaxCycle=512) Integral(Fine)')
 
                 # Uncomment following line for noraff integrals
                 infile.write(' int(noraff)')
@@ -2076,7 +2078,7 @@ def plant(cluster, db, kwargs, method, directory):
             if db['pcm']:
                 infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
             # Uncomment following line for tight convergence
-            #infile.write(' SCF(Conver=12,MaxCycle=512) Integral(UltraFine)')
+            infile.write(' SCF(Conver=12,MaxCycle=512) Integral(UltraFine)')
 
             # Write autogen comment and job name info
             infile.write('\n\nThis is a g09 input file auto-generated '
