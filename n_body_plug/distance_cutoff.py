@@ -7,9 +7,10 @@ def main():
     Main function
     '''
     # Define method, result(s) to add, grab database 
-    method = 'b3lyp'
+    method = 'cam-b3lyp'
     results = ['cutoff_rotation', 'cutoff_solute_rotation']
-    distance = 7.86
+#    distance = 5
+    distance = dist_kwrg
     db = shelve.open(db_name, writeback=True)
     n_max = db[method]['n_body_max']
     
@@ -156,4 +157,6 @@ if __name__ == "__main__":
         db_name = str(sys.argv[1])
     else: 
         db_name = 'database'
+    if len(sys.argv) == 3:
+        dist_kwrg = float(sys.argv[2])
     main()
