@@ -1359,7 +1359,7 @@ def harvest_g09_rotation(db,method,n):
             tr = np.trace(db[method][n]['rotation_tensor']['raw_data'][job][omega])
             # Multiply by additional omega to account for different mu operator
             rot = prefactor * w_h * tr / M / 3.0 * w_h
-            optrot.append(rot)
+            optrot.append(tr)
         optrot = reorder_g09_rotations(optrot, db)
         db[method][n]['rotation']['raw_data'].update({job: optrot})
 
@@ -1391,47 +1391,7 @@ def harvest_g09_solute_rotation(db,method,n):
     M = db[method][1]['MW']['1']
 
     for job in db[method][n]['job_status']:
-        if '1' in job:
-    #        M = db[method][n]['MW'][job]
-            optrot = []
-            for omega in db[method][n]['solute_rotation_tensor']['raw_data'][job]:
-                w_h = c * h * 1E9 / h2j / omega
-                tr = np.trace(db[method][n]['solute_rotation_tensor']['raw_data'][job][omega])
-                # Multiply by additional omega to account for different mu operator
-                rot = prefactor * w_h * tr / M / 3.0 * w_h
-                optrot.append(rot)
-            optrot = reorder_g09_rotations(optrot, db)
-            db[method][n]['solute_rotation']['raw_data'].update({job: optrot})
-
-
-
-def harvest_g09_solute_rotation(db,method,n):
-    """Harvests g09 rotations for solute molecules only. I have to extend the database manually here, so that
-        harvest_g09_rotation_tensor() doesn't get called multiple times."""
-    db[method]['results'].append('solute_rotation_tensor')
-    db[method][n]['solute_rotation_tensor'] = collections.OrderedDict()
-    db[method][n]['solute_rotation_tensor']['correction'] = 0
-    db[method][n]['solute_rotation_tensor']['solute_rotation_tensor'] = 0
-    db[method][n]['solute_rotation_tensor']['vmfc_correction'] = 0
-    db[method][n]['solute_rotation_tensor']['vmfc_approximation'] = 0
-    db[method][n]['solute_rotation_tensor']['mbcp_correction'] = 0
-    db[method][n]['solute_rotation_tensor']['mbcp_approximation'] = 0
-    db[method][n]['solute_rotation_tensor']['raw_data'] = collections.OrderedDict()
-    db[method][n]['solute_rotation_tensor']['cooked_data'] = collections.OrderedDict()
-    harvest_g09_solute_rotation_tensor(db,method,n)
-    body = n_body_dir(n)
-    c = psi4.constants.c
-    h = psi4.constants.h
-    h2j = psi4.constants.hartree2J
-    Na = psi4.constants.na
-    me = psi4.constants.me
-    hbar = h / 2.0 / math.pi
-    prefactor = -72E6 * hbar**2 * Na / c**2 / me**2
-    # Mass weight only by the solute, which is assumed to be the first fragment and job
-    M = db[method][1]['MW']['1']
-
-    for job in db[method][n]['job_status']:
-        if '1' in job:
+        if '1' in job.split('_'):
     #        M = db[method][n]['MW'][job]
             optrot = []
             for omega in db[method][n]['solute_rotation_tensor']['raw_data'][job]:
@@ -1555,7 +1515,7 @@ def harvest_g09_solute_rotation_tensor(db, method, n):
     # Gaussian prints every single value from each tensor in a row, 5 values per row
     n_rows = math.floor(9*n_omega/5)
     for job in db[method][n]['job_status']:
-        if '1' in job:
+        if '1' in job.split('_'):
 #            print("Collecting solute rotation tensor from job {}".format(job))
             # Need a dictionary to hold the different tensors
             tensors = {}       
@@ -1666,7 +1626,7 @@ def harvest_g09_timing(db, method, n):
 def harvest_g09_solute_timing(db, method, n):
     body = n_body_dir(n)
     for job in db[method][n]['job_status']:
-        if '1' in job:
+        if '1' in job.split('_'):
             with open('{}/{}/{}/input.log'.format(method,body,job),'r') as outfile:
                 for line in outfile:
                     if 'Job cpu time:' in line:
@@ -2068,15 +2028,16 @@ def plant(cluster, db, kwargs, method, directory):
                 # G09 only likes integer values on MEM
                 infile.write('#p {}/{} NoSymmetry'.format(method,basis))
                 if omega_list:
-                    #infile.write(' CPHF(RdFreq)')
+                    infile.write(' CPHF(RdFreq)')
                     # Uncomment following line and comment the previous for tight convergence
                     #infile.write(' CPHF(Conver=12,RdFreq,Grid=UltraFine)')
-                    infile.write(' CPHF(Conver=12,RdFreq)')
+                    #infile.write(' CPHF(Conver=12,RdFreq)')
                 if db['pcm']:
                     infile.write(' SCRF=(PCM,Solvent={})'.format(db['pcm']))
                 # Uncomment following line for tight convergence
                 #infile.write(' SCF(Conver=12,MaxCycle=512) Integral(UltraFine)')
-                infile.write(' SCF(Conver=12,MaxCycle=512) Integral(Fine)')
+                # infile.write(' SCF(Conver=12,MaxCycle=512) Integral(Fine)')
+                infile.write(' Integral(Grid=75302)')
 
                 # Uncomment following line for noraff integrals
                 infile.write(' int(noraff)')

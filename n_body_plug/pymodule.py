@@ -127,15 +127,27 @@ def run_n_body(name, **kwargs):
     molecule = psi4.core.get_active_molecule()
 
     # Get distances from solute
-    db['solvent_distances'] = {}
+    # Defined as distance from solute GEOMETRIC CENTER (not center of mass) to furthest atom of frag
+    db['solvent_distances'] = {'1': 0.0}
     b2a = psi4.constants.bohr2angstroms # Only supporting angstroms
+#    slt_com = molecule.extract_subsets(1).center_of_mass()
     slt = molecule.extract_subsets(1)
-    slt_com = slt.center_of_mass()
-    for i in range(1, molecule.nfragments()+1):
+    m_sum = [0,0,0]
+    for atom in range(0,slt.natom()):
+        m_sum[0] += slt.x(atom)
+        m_sum[1] += slt.y(atom)
+        m_sum[2] += slt.z(atom)
+    slt_cen = psi4.core.Vector3(m_sum[0]/slt.natom(),m_sum[1]/slt.natom(),m_sum[2]/slt.natom())
+    for i in range(2, molecule.nfragments()+1):
         frag = molecule.extract_subsets(i)
-        frag_com = frag.center_of_mass()
-        frag_dist = slt_com.distance(frag_com) * b2a
-        db['solvent_distances'].update({str(i): frag_dist})
+        a0_vec = psi4.core.Vector3(frag.x(0),frag.y(0),frag.z(0))
+        dist = slt_cen.distance(a0_vec)*b2a
+        for n in range(1,frag.natom()):
+            a_vec = psi4.core.Vector3(frag.x(n),frag.y(n),frag.z(n))
+            new_dist = slt_cen.distance(a_vec)*b2a
+            if new_dist > dist:
+                dist = new_dist
+        db['solvent_distances'].update({str(i): dist})
 
     # Determine interacting fragments
     if db['cutoff']:
